@@ -6,10 +6,12 @@ import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 import type { Config } from './config/env';
 import type { PrismaClient } from './lib/prisma';
+import { createAuthMiddlewares } from './middlewares/authenticate';
 import { createErrorHandler } from './middlewares/error-handler';
 import { notFound } from './middlewares/not-found';
 import { createRateLimiter } from './middlewares/rate-limit';
 import { requestId } from './middlewares/request-id';
+import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
 import { createHealthRouter } from './modules/health/health.routes';
@@ -44,10 +46,15 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
   app.use(cookieParser());
 
   const tokens = createTokenService(config.auth);
+  const authRepository = createAuthRepository(prisma);
+  const { authenticate } = createAuthMiddlewares({
+    verifyAccessToken: (token) => tokens.verifyAccessToken(token),
+    findUser: (id) => authRepository.findSessionUser(id),
+  });
 
   const api = express.Router();
   api.use('/health', createHealthRouter(config));
-  api.use('/auth', createAuthRouter({ config, prisma, tokens }));
+  api.use('/auth', createAuthRouter({ config, prisma, tokens, authenticate }));
   app.use('/api', api);
 
   app.use(notFound);

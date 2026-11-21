@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { type RequestHandler, Router } from 'express';
 import type { Config } from '../../config/env';
 import type { PrismaClient } from '../../lib/prisma';
 import { createRateLimiter } from '../../middlewares/rate-limit';
@@ -13,10 +13,16 @@ export interface AuthRouterDependencies {
   config: Config;
   prisma: PrismaClient;
   tokens: TokenService;
+  authenticate: RequestHandler;
 }
 
-/** /api/auth: register, login, refresh and logout. */
-export function createAuthRouter({ config, prisma, tokens }: AuthRouterDependencies): Router {
+/** /api/auth: register, login, refresh, logout and the signed-in user. */
+export function createAuthRouter({
+  config,
+  prisma,
+  tokens,
+  authenticate,
+}: AuthRouterDependencies): Router {
   const service = createAuthService({
     repository: createAuthRepository(prisma),
     tokens,
@@ -34,5 +40,6 @@ export function createAuthRouter({ config, prisma, tokens }: AuthRouterDependenc
   router.post('/login', authRateLimiter, validate(loginInput), controller.login);
   router.post('/refresh', controller.refresh);
   router.post('/logout', controller.logout);
+  router.get('/me', authenticate, controller.me);
   return router;
 }

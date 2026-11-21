@@ -132,6 +132,13 @@ export function createAuthService({ repository, tokens, bcryptRounds }: AuthServ
       return startSession(user);
     },
 
+    /** The signed-in user, with the private fields only its owner sees. */
+    async getMe(userId: string): Promise<MeUser> {
+      const user = await repository.findUserById(userId);
+      if (user === null) throw new AppError('UNAUTHENTICATED', 'Sign in to continue', 401);
+      return toMeUser(user);
+    },
+
     /** Revokes the refresh token of this session, if any. Always succeeds. */
     async logout(refreshToken: string | undefined): Promise<void> {
       if (refreshToken === undefined) return;

@@ -13,14 +13,16 @@ Every endpoint lives under the `/api` path and speaks JSON.
 
 ## Common errors
 
-| Status | Code                | When                                                                                                                |
-| ------ | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 400    | `VALIDATION_ERROR`  | The params, query or body do not match the endpoint schema. `details` lists the issues (`path`, `message`, `code`). |
-| 400    | `INVALID_JSON`      | The request body is not valid JSON.                                                                                 |
-| 404    | `ROUTE_NOT_FOUND`   | No endpoint matches the method and path.                                                                            |
-| 413    | `PAYLOAD_TOO_LARGE` | The JSON body is bigger than `JSON_BODY_LIMIT`.                                                                     |
-| 429    | `RATE_LIMITED`      | The client sent more than `RATE_LIMIT_MAX` requests in `RATE_LIMIT_WINDOW_MS`.                                      |
-| 500    | `INTERNAL_ERROR`    | Unexpected error. `details` is always `null` in production.                                                         |
+| Status | Code                | When                                                                                                                                                                                                                         |
+| ------ | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`  | The params, query or body do not match the endpoint schema. `details` lists the issues (`path`, `message`, `code`).                                                                                                          |
+| 400    | `INVALID_JSON`      | The request body is not valid JSON.                                                                                                                                                                                          |
+| 401    | `UNAUTHENTICATED`   | The route needs a session and the `Authorization: Bearer <access token>` header is missing or invalid, or the token expired, or the account was deactivated. The client should call `POST /api/auth/refresh` once and retry. |
+| 403    | `FORBIDDEN`         | The signed-in user does not have the role the route requires (for example `ADMIN`).                                                                                                                                          |
+| 404    | `ROUTE_NOT_FOUND`   | No endpoint matches the method and path.                                                                                                                                                                                     |
+| 413    | `PAYLOAD_TOO_LARGE` | The JSON body is bigger than `JSON_BODY_LIMIT`.                                                                                                                                                                              |
+| 429    | `RATE_LIMITED`      | The client sent more than `RATE_LIMIT_MAX` requests in `RATE_LIMIT_WINDOW_MS`.                                                                                                                                               |
+| 500    | `INTERNAL_ERROR`    | Unexpected error. `details` is always `null` in production.                                                                                                                                                                  |
 
 ## Health
 
@@ -110,3 +112,7 @@ Errors: `401 INVALID_REFRESH_TOKEN` when the cookie is missing, invalid, expired
 ### `POST /api/auth/logout`
 
 No body. Revokes the refresh token of the cookie (if any) and clears the cookie. Always **204**.
+
+### `GET /api/auth/me`
+
+Requires a session. **200** with the signed-in user (the `user` object of the session response). The API reloads the user on every authenticated request, so a deactivation or a role change applies immediately. Errors: `401 UNAUTHENTICATED`.

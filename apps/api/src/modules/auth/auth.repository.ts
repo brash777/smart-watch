@@ -19,6 +19,14 @@ export function createAuthRepository(prisma: PrismaClient) {
       return prisma.user.findUnique({ where: { id }, select: meUserSelect });
     },
 
+    /** What authenticate needs on every request: the current role and whether the account is active. */
+    findSessionUser(id: string) {
+      return prisma.user.findUnique({
+        where: { id },
+        select: { id: true, username: true, role: true, isActive: true },
+      });
+    },
+
     /** Login lookup: identifier is a (lowercase) email or username. Includes the password hash. */
     findUserForLogin(identifier: string) {
       return prisma.user.findFirst({

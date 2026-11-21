@@ -1,5 +1,6 @@
 import type { CookieOptions, Request, RequestHandler, Response } from 'express';
 import { z } from 'zod';
+import { requireAuth } from '../../middlewares/authenticate';
 import { getValidatedInput } from '../../middlewares/validate';
 import { loginInput, registerInput } from './auth.schemas';
 import type { AuthResult, AuthService } from './auth.service';
@@ -59,5 +60,9 @@ export function createAuthController(
     res.status(204).end();
   };
 
-  return { register, login, refresh, logout };
+  const me: RequestHandler = async (req, res) => {
+    res.json({ data: await service.getMe(requireAuth(req).userId) });
+  };
+
+  return { register, login, refresh, logout, me };
 }

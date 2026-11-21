@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# commit-msg hook: removes attribution lines from the commit message.
+#
+# Deletes every line that starts with "Co-Authored-By:" or that contains
+# "Generated with" together with "Claude" (case-insensitive).
+#
+# Uses grep and a temporary file instead of "sed -i" so it behaves the same
+# on Linux, macOS and Windows (Git Bash).
+#
+# Enable it once per clone with: git config core.hooksPath .githooks
+set -u
+
+msg_file="$1"
+tmp_file="${msg_file}.tmp.$$"
+
+grep -viE '^[[:space:]]*co-authored-by:|generated with.*claude|claude.*generated with' "$msg_file" > "$tmp_file"
+status=$?
+
+# grep exits with 1 when no line is left (every line was removed): not an error.
+# Exit codes of 2 or more mean the message file could not be read.
+if [ "$status" -gt 1 ]; then
+  rm -f "$tmp_file"
+  echo "commit-msg hook: could not read $msg_file" >&2
+  exit 1
+fi
+
+cat "$tmp_file" > "$msg_file"
+rm -f "$tmp_file"
+exit 0

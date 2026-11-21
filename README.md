@@ -34,6 +34,8 @@ Then open `GET /api/health` on the API (`API_BASE_URL` in `.env`).
 
 `npm install` runs `git config core.hooksPath .githooks`. The `commit-msg` hook keeps commit messages free of attribution lines.
 
+`npm test` needs PostgreSQL running (`npm run db:up`): the API integration tests create, migrate and empty the `TEST_DATABASE_URL` database, never `DATABASE_URL`.
+
 | Script                                                         | What it does                                        |
 | -------------------------------------------------------------- | --------------------------------------------------- |
 | `npm run dev`                                                  | Every `dev:*` script in parallel (for now, the API) |

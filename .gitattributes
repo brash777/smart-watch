@@ -1,0 +1,4 @@
+# Normalize text files to LF in the repository and in every checkout.
+# Keeps shell scripts such as .githooks/commit-msg working on Windows (Git Bash),
+# where CRLF line endings would break the shebang line.
+* text=auto eol=lf

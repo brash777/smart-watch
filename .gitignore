@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Test output
+coverage/
+playwright-report/
+
+# Environment files (only the example is committed)
+.env
+.env.*
+!.env.example
+
+# Local file storage
+uploads/
+storage/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json

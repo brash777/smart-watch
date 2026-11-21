@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+/** Global role of a User. */
+export const userRoleSchema = z.enum(['USER', 'ADMIN']);
+
 /** Space mode: decides what the AI does with the snaps of a Space (docs/PRODUCT.md, "Space modes"). */
 export const spaceModeSchema = z.enum(['STUDY', 'WORK', 'CONTENT']);
 

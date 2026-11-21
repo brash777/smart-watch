@@ -2,6 +2,7 @@ import { createApp } from './app';
 import { EnvValidationError, type Config } from './config/env';
 import { loadConfig } from './config/load-config';
 import { createLogger } from './lib/logger';
+import { disconnectPrisma, getPrisma } from './lib/prisma';
 
 /** Loads and validates the configuration; on any problem, explains it and stops. */
 function readConfig(): Config {
@@ -20,7 +21,8 @@ function readConfig(): Config {
 
 const config = readConfig();
 const logger = createLogger(config);
-const app = createApp({ config, logger });
+const prisma = getPrisma(config.database.url);
+const app = createApp({ config, logger, prisma });
 
 const server = app.listen(config.http.port);
 
@@ -37,6 +39,10 @@ function shutdown(signal: NodeJS.Signals): void {
   logger.info({ signal }, 'Shutting down');
   server.close((error) => {
     process.exitCode = error ? 1 : 0;
+    disconnectPrisma().catch((disconnectError: unknown) => {
+      logger.error({ err: disconnectError }, 'Could not close the database connections');
+      process.exitCode = 1;
+    });
   });
 }
 

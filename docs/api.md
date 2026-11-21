@@ -47,3 +47,66 @@ Liveness check. Public: no authentication.
 | `appName` | Value of `APP_NAME`.                   |
 | `uptime`  | Seconds since the API process started. |
 | `version` | Version in `apps/api/package.json`.    |
+
+## Auth
+
+A session has two tokens:
+
+- **Access token:** a short JWT (`JWT_ACCESS_TTL`, signed with `JWT_ACCESS_SECRET`) returned in the JSON body. Send it as `Authorization: Bearer <token>`.
+- **Refresh token:** a JWT (`JWT_REFRESH_TTL`, signed with `JWT_REFRESH_SECRET`) in the `refresh_token` cookie: `HttpOnly`, `SameSite=Lax`, `Secure` in production, and only sent to `/api/auth`. The database stores only its SHA-256 hash. Browsers must call the API with credentials (`fetch(..., { credentials: 'include' })`).
+
+`register` and `login` share a stricter rate limit: `AUTH_RATE_LIMIT_MAX` requests per client in `RATE_LIMIT_WINDOW_MS`.
+
+**Session response** (`register`, `login`, `refresh`):
+
+```json
+{
+  "data": {
+    "accessToken": "eyJ…",
+    "tokenType": "Bearer",
+    "expiresIn": 900,
+    "user": {
+      "id": "0196…",
+      "name": "Ana Demo",
+      "username": "ana.demo",
+      "email": "ana.demo@example.com",
+      "role": "USER",
+      "bio": null,
+      "university": null,
+      "avatarUrl": null,
+      "createdAt": "2026-11-21T18:00:00.000Z"
+    }
+  }
+}
+```
+
+`expiresIn` is the lifetime of the access token in seconds.
+
+### `POST /api/auth/register`
+
+Creates a `USER` account and signs it in. Public.
+
+| Body field | Rules                                                                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`     | Required.                                                                                                                                           |
+| `username` | 3–30 characters: lowercase letters, digits, dots and underscores; no dot at the start or end, no two dots in a row; `me` and `search` are reserved. |
+| `email`    | A valid email address.                                                                                                                              |
+| `password` | At least 8 characters with a letter and a digit (at most 72 bytes).                                                                                 |
+
+`username` and `email` are trimmed and lowercased. **201** with the session and the refresh cookie. Errors: `400 VALIDATION_ERROR`, `409 EMAIL_TAKEN`, `409 USERNAME_TAKEN`, `429 RATE_LIMITED`.
+
+### `POST /api/auth/login`
+
+Body: `{ "identifier": "<email or username>", "password": "…" }`. Public.
+
+**200** with the session and the refresh cookie. Errors: `400 VALIDATION_ERROR`, `401 INVALID_CREDENTIALS` (same answer for an unknown account and a wrong password), `403 ACCOUNT_DISABLED`, `429 RATE_LIMITED`.
+
+### `POST /api/auth/refresh`
+
+No body: it reads the `refresh_token` cookie. Rotates the token: the one used is revoked, and the response has a new session and a new cookie.
+
+Errors: `401 INVALID_REFRESH_TOKEN` when the cookie is missing, invalid, expired or revoked, or the account is deactivated; the cookie is cleared. Reusing a revoked token also ends every session of that user, because the token may have been stolen. A web client must not send two refresh requests at the same time.
+
+### `POST /api/auth/logout`
+
+No body. Revokes the refresh token of the cookie (if any) and clears the cookie. Always **204**.

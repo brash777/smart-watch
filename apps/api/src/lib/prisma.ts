@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../generated/prisma/client';
+import { Prisma, PrismaClient } from '../generated/prisma/client';
 
 export type { PrismaClient } from '../generated/prisma/client';
 
@@ -16,4 +16,9 @@ export async function disconnectPrisma(): Promise<void> {
   const client = prisma;
   prisma = undefined;
   await client?.$disconnect();
+}
+
+/** True when a write failed because of a unique constraint (Prisma error P2002). */
+export function isUniqueConstraintError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }

@@ -78,6 +78,10 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 
 - **RefreshToken**: a long-lived session of a User. Only a hash of the token is stored, and it can be revoked.
 - **Follow**: a User following another User.
+- **DocumentSource**: a snap used by a Document, with its position. The document cites its N-th source as `[Snap N]`.
+- **Flashcard**: one question and answer of a FlashcardDeck, optionally linked to the snap it comes from.
+- **QuizQuestion**: one multiple-choice question of a Quiz, with its correct option and an explanation.
+- **QuizAttempt**: one try of a User at a Quiz, with the chosen answers and the score.
 
 ### Other terms
 
@@ -98,6 +102,10 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 | Space role (SpaceMember) | `OWNER`, `EDITOR`, `VIEWER`                                                                                                         |
 | Snap analysis status     | `PENDING`, `PROCESSING`, `DONE`, `FAILED`                                                                                           |
 | Document type            | `STUDY_NOTES`, `STUDY_SUMMARY`, `ASSIGNMENT_GUIDE`, `WORK_DAILY_REPORT`, `WORK_PROGRESS_REPORT`, `CONTENT_POST`, `CONTENT_CAROUSEL` |
+| Document status          | `DRAFT`, `FINAL`                                                                                                                    |
+| AiRun task               | `SNAP_ANALYSIS`, `COMPOSE_DOCUMENT`, `STUDY_FLASHCARDS`, `STUDY_QUIZ`, `ASK_SPACE`, `POST_DRAFT`                                    |
+| AiRun status             | `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`                                                                                      |
+| AskMessage role          | `USER`, `ASSISTANT`                                                                                                                 |
 
 ---
 

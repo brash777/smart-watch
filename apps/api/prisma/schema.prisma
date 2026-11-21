@@ -59,6 +59,52 @@ enum AnalysisStatus {
   @@map("analysis_status")
 }
 
+enum AiTask {
+  SNAP_ANALYSIS
+  COMPOSE_DOCUMENT
+  STUDY_FLASHCARDS
+  STUDY_QUIZ
+  ASK_SPACE
+  POST_DRAFT
+
+  @@map("ai_task")
+}
+
+enum AiRunStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("ai_run_status")
+}
+
+enum DocumentType {
+  STUDY_NOTES
+  STUDY_SUMMARY
+  ASSIGNMENT_GUIDE
+  WORK_DAILY_REPORT
+  WORK_PROGRESS_REPORT
+  CONTENT_POST
+  CONTENT_CAROUSEL
+
+  @@map("document_type")
+}
+
+enum DocumentStatus {
+  DRAFT
+  FINAL
+
+  @@map("document_status")
+}
+
+enum AskMessageRole {
+  USER
+  ASSISTANT
+
+  @@map("ask_message_role")
+}
+
 // -----------------------------------------------------------------------------
 // Users and follows
 // -----------------------------------------------------------------------------
@@ -81,12 +127,18 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   refreshTokens    RefreshToken[]
-  following        Follow[]       @relation("FollowFollower")
-  followers        Follow[]       @relation("FollowFollowing")
+  following        Follow[]        @relation("FollowFollower")
+  followers        Follow[]        @relation("FollowFollowing")
   ownedSpaces      Space[]
   spaceMemberships SpaceMember[]
   createdInvites   SpaceInvite[]
   snaps            Snap[]
+  aiRuns           AiRun[]
+  documents        Document[]
+  flashcardDecks   FlashcardDeck[]
+  quizzes          Quiz[]
+  quizAttempts     QuizAttempt[]
+  askMessages      AskMessage[]
 
   @@map("users")
 }
@@ -142,11 +194,16 @@ model Space {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  owner     User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  coverSnap Snap?         @relation("SpaceCover", fields: [coverSnapId], references: [id], onDelete: SetNull)
-  members   SpaceMember[]
-  invites   SpaceInvite[]
-  snaps     Snap[]        @relation("SpaceSnaps")
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  coverSnap      Snap?           @relation("SpaceCover", fields: [coverSnapId], references: [id], onDelete: SetNull)
+  members        SpaceMember[]
+  invites        SpaceInvite[]
+  snaps          Snap[]          @relation("SpaceSnaps")
+  aiRuns         AiRun[]
+  documents      Document[]
+  flashcardDecks FlashcardDeck[]
+  quizzes        Quiz[]
+  askMessages    AskMessage[]
 
   @@index([ownerId])
   @@map("spaces")
@@ -210,12 +267,237 @@ model Snap {
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
-  space   Space  @relation("SpaceSnaps", fields: [spaceId], references: [id], onDelete: Cascade)
-  author  User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  coverOf Space? @relation("SpaceCover")
+  space           Space            @relation("SpaceSnaps", fields: [spaceId], references: [id], onDelete: Cascade)
+  author          User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coverOf         Space?           @relation("SpaceCover")
+  insight         SnapInsight?
+  documentSources DocumentSource[]
+  flashcards      Flashcard[]
+  quizQuestions   QuizQuestion[]
 
   @@index([spaceId, takenAt])
   @@index([analysisStatus])
   @@index([authorId])
   @@map("snaps")
+}
+
+// -----------------------------------------------------------------------------
+// AI runs, insights, documents and study material
+// -----------------------------------------------------------------------------
+
+model AiRun {
+  id            String      @id @default(uuid(7)) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  spaceId       String?     @map("space_id") @db.Uuid
+  task          AiTask
+  status        AiRunStatus @default(PENDING)
+  provider      String
+  model         String
+  promptVersion String      @map("prompt_version")
+  /// What was sent to the AI. Never images: snaps are referenced by id.
+  input         Json
+  output        Json?
+  error         String?
+  inputTokens   Int?        @map("input_tokens")
+  outputTokens  Int?        @map("output_tokens")
+  latencyMs     Int?        @map("latency_ms")
+  /// Estimated cost in USD, from the token prices in AppSetting.
+  estimatedCost Decimal?    @map("estimated_cost") @db.Decimal(12, 6)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space        Space?        @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  snapInsights SnapInsight[]
+  documents    Document[]
+  askMessages  AskMessage[]
+
+  @@index([createdAt, task])
+  @@index([userId])
+  @@index([spaceId])
+  @@map("ai_runs")
+}
+
+model SnapInsight {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  snapId        String    @unique @map("snap_id") @db.Uuid
+  mode          SpaceMode
+  summary       String
+  /// Text read from the photo (STUDY mode).
+  extractedText String?   @map("extracted_text")
+  /// Full AI result for the mode, validated with the output schemas of @snapia/shared.
+  data          Json
+  aiRunId       String?   @map("ai_run_id") @db.Uuid
+  /// True once the person edited the AI result.
+  editedByUser  Boolean   @default(false) @map("edited_by_user")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  snap  Snap   @relation(fields: [snapId], references: [id], onDelete: Cascade)
+  aiRun AiRun? @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
+
+  @@index([aiRunId])
+  @@map("snap_insights")
+}
+
+model Document {
+  id              String         @id @default(uuid(7)) @db.Uuid
+  spaceId         String         @map("space_id") @db.Uuid
+  authorId        String         @map("author_id") @db.Uuid
+  type            DocumentType
+  title           String
+  /// Extra instructions the author gave to Compose.
+  instructions    String?
+  contentMarkdown String         @map("content_markdown")
+  status          DocumentStatus @default(DRAFT)
+  version         Int            @default(1)
+  aiRunId         String?        @map("ai_run_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  space          Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author         User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  aiRun          AiRun?           @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
+  sources        DocumentSource[]
+  flashcardDecks FlashcardDeck[]
+
+  @@index([spaceId, type])
+  @@index([authorId])
+  @@index([aiRunId])
+  @@map("documents")
+}
+
+/// A snap used by a Document. The document cites its N-th source (by order) as [Snap N].
+model DocumentSource {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  documentId String   @map("document_id") @db.Uuid
+  snapId     String   @map("snap_id") @db.Uuid
+  order      Int      @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  snap     Snap     @relation(fields: [snapId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, snapId])
+  @@index([snapId])
+  @@map("document_sources")
+}
+
+model FlashcardDeck {
+  id               String   @id @default(uuid(7)) @db.Uuid
+  spaceId          String   @map("space_id") @db.Uuid
+  authorId         String   @map("author_id") @db.Uuid
+  title            String
+  sourceDocumentId String?  @map("source_document_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  space          Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author         User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  sourceDocument Document?   @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  cards          Flashcard[]
+
+  @@index([spaceId])
+  @@index([authorId])
+  @@index([sourceDocumentId])
+  @@map("flashcard_decks")
+}
+
+model Flashcard {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  deckId       String   @map("deck_id") @db.Uuid
+  question     String
+  answer       String
+  sourceSnapId String?  @map("source_snap_id") @db.Uuid
+  order        Int      @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  deck       FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sourceSnap Snap?         @relation(fields: [sourceSnapId], references: [id], onDelete: SetNull)
+
+  @@index([deckId, order])
+  @@index([sourceSnapId])
+  @@map("flashcards")
+}
+
+model Quiz {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  spaceId   String   @map("space_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  title     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  space     Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([spaceId])
+  @@index([authorId])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  quizId       String   @map("quiz_id") @db.Uuid
+  prompt       String
+  options      String[]
+  /// Index in options of the correct answer.
+  correctIndex Int      @map("correct_index")
+  explanation  String?
+  sourceSnapId String?  @map("source_snap_id") @db.Uuid
+  order        Int      @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  quiz       Quiz  @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sourceSnap Snap? @relation(fields: [sourceSnapId], references: [id], onDelete: SetNull)
+
+  @@index([quizId, order])
+  @@index([sourceSnapId])
+  @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  quizId    String   @map("quiz_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  /// Chosen option index for each question, in question order.
+  answers   Int[]
+  /// Number of correct answers.
+  score     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, userId])
+  @@index([userId])
+  @@map("quiz_attempts")
+}
+
+/// A message of the "Ask your Space" chat. Each user has their own conversation per Space.
+model AskMessage {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  spaceId      String         @map("space_id") @db.Uuid
+  /// Owner of the conversation (for both USER and ASSISTANT messages).
+  userId       String         @map("user_id") @db.Uuid
+  role         AskMessageRole
+  content      String
+  citedSnapIds String[]       @default([]) @map("cited_snap_ids") @db.Uuid
+  aiRunId      String?        @map("ai_run_id") @db.Uuid
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  space Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiRun AiRun? @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, userId, createdAt])
+  @@index([aiRunId])
+  @@map("ask_messages")
 }

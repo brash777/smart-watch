@@ -10,6 +10,7 @@ Every endpoint lives under the `/api` path and speaks JSON.
   - `message` is English and meant for developers.
   - `details` is `null` unless the error has more information (for example validation issues).
 - **Request id:** every response has an `X-Request-Id` header. A valid UUID sent by the client in that header is reused; otherwise the API creates one. Logs include the same id.
+- **Pagination:** lists accept `?limit=<n>&cursor=<id>` and answer `{ "data": [ … ], "meta": { "nextCursor": "…" } }`. `limit` defaults to `PAGINATION_DEFAULT_LIMIT` and cannot exceed `PAGINATION_MAX_LIMIT` (400 otherwise). Send `nextCursor` as `cursor` to get the next page; it is `null` on the last page.
 
 ## Common errors
 
@@ -116,3 +117,53 @@ No body. Revokes the refresh token of the cookie (if any) and clears the cookie.
 ### `GET /api/auth/me`
 
 Requires a session. **200** with the signed-in user (the `user` object of the session response). The API reloads the user on every authenticated request, so a deactivation or a role change applies immediately. Errors: `401 UNAUTHENTICATED`.
+
+## Users
+
+A **user summary** (search, followers, following) is `{ "id", "name", "username", "avatarUrl" }`. Public views of a user never include the email, the password hash or the role. `avatarUrl` stays `null` until profile photos exist.
+
+### `GET /api/users/:username`
+
+Public profile. Public, with an optional session (`Authorization` header) for `isFollowedByMe`. The username is case-insensitive.
+
+```json
+{
+  "data": {
+    "id": "0196…",
+    "name": "Leo Demo",
+    "username": "leo.demo",
+    "avatarUrl": null,
+    "bio": "Técnico de instalaciones.",
+    "counts": { "posts": 3, "followers": 10, "following": 4 },
+    "isFollowedByMe": false
+  }
+}
+```
+
+`counts.posts` leaves out Posts hidden by moderation; follower counts only include active users. `isFollowedByMe` is `false` for anonymous visitors and on your own profile. Errors: `404 USER_NOT_FOUND` (also for deactivated users).
+
+### `PATCH /api/users/me`
+
+Requires a session. Body with at least one of `name`, `bio` and `university`; an empty `bio` or `university` clears it. **200** with the signed-in user (same shape as `GET /api/auth/me`). Errors: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`.
+
+### `GET /api/users/search?q=<text>`
+
+Public. Active users whose username or name contains `q` (case-insensitive), sorted by username, paginated. **200** with a page of user summaries. Errors: `400 VALIDATION_ERROR` (missing `q`, invalid `limit` or `cursor`).
+
+## Admin: users
+
+Every route requires a session with the `ADMIN` role: `401 UNAUTHENTICATED` without a session, `403 FORBIDDEN` for other roles. An **admin user** is a user summary plus `email`, `role`, `isActive` and `createdAt`.
+
+### `GET /api/admin/users`
+
+Every user, newest first, paginated. Optional filters: `q` (username, name or email contains), `role` (`USER` or `ADMIN`) and `isActive` (`true` or `false`).
+
+### `PATCH /api/admin/users/:id/status`
+
+Body: `{ "isActive": false }` or `{ "isActive": true }`. Deactivating an account ends all of its sessions at once: it cannot sign in, refresh or use its access token. **200** with the admin user.
+
+### `PATCH /api/admin/users/:id/role`
+
+Body: `{ "role": "ADMIN" }` or `{ "role": "USER" }`. The new role applies to the user's next request. **200** with the admin user.
+
+Errors of both: `400 VALIDATION_ERROR`, `400 CANNOT_MODIFY_YOURSELF` (ADMINs cannot change their own role or status), `404 USER_NOT_FOUND`.

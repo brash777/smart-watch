@@ -15,6 +15,7 @@ import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
 import { createHealthRouter } from './modules/health/health.routes';
+import { createAdminUsersRouter, createUsersRouter } from './modules/users/users.routes';
 
 export interface AppDependencies {
   config: Config;
@@ -47,7 +48,7 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
 
   const tokens = createTokenService(config.auth);
   const authRepository = createAuthRepository(prisma);
-  const { authenticate } = createAuthMiddlewares({
+  const { authenticate, optionalAuth } = createAuthMiddlewares({
     verifyAccessToken: (token) => tokens.verifyAccessToken(token),
     findUser: (id) => authRepository.findSessionUser(id),
   });
@@ -55,6 +56,8 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
   const api = express.Router();
   api.use('/health', createHealthRouter(config));
   api.use('/auth', createAuthRouter({ config, prisma, tokens, authenticate }));
+  api.use('/users', createUsersRouter({ config, prisma, authenticate, optionalAuth }));
+  api.use('/admin/users', createAdminUsersRouter({ config, prisma, authenticate }));
   app.use('/api', api);
 
   app.use(notFound);

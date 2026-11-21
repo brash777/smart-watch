@@ -1,7 +1,7 @@
 import type { PrismaClient } from '../../lib/prisma';
 
 /** Fields of the signed-in user (GET /auth/me). Never the password hash. */
-const meUserSelect = {
+export const meUserSelect = {
   id: true,
   name: true,
   username: true,

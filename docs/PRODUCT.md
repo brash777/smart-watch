@@ -71,7 +71,7 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 - **Quiz**: a set of questions with their answers, generated from snaps or from STUDY documents.
 - **AskMessage**: a message in the "Ask your Space" chat. Answers use only what the Space's snaps contain, and they cite those snaps.
 - **Moment**: a snap shared for a limited time (24 hours by default) with the author's followers, the members of a Space, or the public.
-- **Post**: a permanent publication in the feed and in the user's portfolio, with one or several snaps, a caption and hashtags.
+- **Post**: a permanent publication in the feed and in the user's portfolio, with one or several snaps, a caption and hashtags. Its visibility is `PUBLIC` or `FOLLOWERS`.
 - **AiRun**: the record of one AI call: task, model, tokens, estimated cost, duration and error (if any).
 
 ### Supporting entities
@@ -82,6 +82,10 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 - **Flashcard**: one question and answer of a FlashcardDeck, optionally linked to the snap it comes from.
 - **QuizQuestion**: one multiple-choice question of a Quiz, with its correct option and an explanation.
 - **QuizAttempt**: one try of a User at a Quiz, with the chosen answers and the score.
+- **MomentView**: a User who saw a Moment.
+- **PostMedia**: a snap shown in a Post, with its alt text and position.
+- **Like**: a User liking a Post.
+- **Comment**: a User's comment on a Post. ADMINs can hide it.
 
 ### Other terms
 
@@ -106,6 +110,9 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 | AiRun task               | `SNAP_ANALYSIS`, `COMPOSE_DOCUMENT`, `STUDY_FLASHCARDS`, `STUDY_QUIZ`, `ASK_SPACE`, `POST_DRAFT`                                    |
 | AiRun status             | `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`                                                                                      |
 | AskMessage role          | `USER`, `ASSISTANT`                                                                                                                 |
+| Moment audience          | `FOLLOWERS`, `SPACE_MEMBERS`, `PUBLIC`                                                                                              |
+| Post visibility          | `PUBLIC`, `FOLLOWERS`                                                                                                               |
+| AppSetting value type    | `NUMBER`, `STRING`, `BOOLEAN`, `STRING_LIST`                                                                                        |
 
 ---
 
@@ -176,7 +183,9 @@ A Space can be shared so that several people add snaps to it.
 
 - **Follow:** users can follow other users.
 - **Moments:** a Moment shares one snap for a limited time, 24 hours by default (an AppSetting). The author picks the audience: their followers, the members of one of their Spaces, or everyone. When it expires, nobody sees it anymore.
-- **Posts:** a Post is permanent and public. It has one or several snaps, a caption and hashtags, and it appears in the author's followers' feeds, in the author's portfolio and in Explore.
+- **Posts:** a Post is permanent. It has one or several snaps, a caption, hashtags and a visibility:
+  - `PUBLIC` (default): anyone can see it; it appears in the author's followers' feeds, in the author's portfolio and in Explore.
+  - `FOLLOWERS`: only the author's followers can see it, in their feeds and on the author's profile.
 - **Likes and comments** on Posts.
 - **Feed:** the Posts of the people the user follows, newest first.
 - **Explore:** discover public Posts by hashtag.

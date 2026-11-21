@@ -105,6 +105,30 @@ enum AskMessageRole {
   @@map("ask_message_role")
 }
 
+enum MomentAudience {
+  FOLLOWERS
+  SPACE_MEMBERS
+  PUBLIC
+
+  @@map("moment_audience")
+}
+
+enum PostVisibility {
+  PUBLIC
+  FOLLOWERS
+
+  @@map("post_visibility")
+}
+
+enum SettingValueType {
+  NUMBER
+  STRING
+  BOOLEAN
+  STRING_LIST
+
+  @@map("setting_value_type")
+}
+
 // -----------------------------------------------------------------------------
 // Users and follows
 // -----------------------------------------------------------------------------
@@ -139,6 +163,11 @@ model User {
   quizzes          Quiz[]
   quizAttempts     QuizAttempt[]
   askMessages      AskMessage[]
+  moments          Moment[]
+  momentViews      MomentView[]
+  posts            Post[]
+  likes            Like[]
+  comments         Comment[]
 
   @@map("users")
 }
@@ -204,6 +233,8 @@ model Space {
   flashcardDecks FlashcardDeck[]
   quizzes        Quiz[]
   askMessages    AskMessage[]
+  moments        Moment[]
+  posts          Post[]
 
   @@index([ownerId])
   @@map("spaces")
@@ -274,6 +305,8 @@ model Snap {
   documentSources DocumentSource[]
   flashcards      Flashcard[]
   quizQuestions   QuizQuestion[]
+  moments         Moment[]
+  postMedia       PostMedia[]
 
   @@index([spaceId, takenAt])
   @@index([analysisStatus])
@@ -360,6 +393,7 @@ model Document {
   aiRun          AiRun?           @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
   sources        DocumentSource[]
   flashcardDecks FlashcardDeck[]
+  posts          Post[]
 
   @@index([spaceId, type])
   @@index([authorId])
@@ -500,4 +534,142 @@ model AskMessage {
   @@index([spaceId, userId, createdAt])
   @@index([aiRunId])
   @@map("ask_messages")
+}
+
+// -----------------------------------------------------------------------------
+// Moments, posts and settings
+// -----------------------------------------------------------------------------
+
+/// A snap shared for a limited time (moment_ttl_hours) with an audience.
+model Moment {
+  id        String         @id @default(uuid(7)) @db.Uuid
+  authorId  String         @map("author_id") @db.Uuid
+  snapId    String         @map("snap_id") @db.Uuid
+  /// The Space whose members see the Moment (audience SPACE_MEMBERS).
+  spaceId   String?        @map("space_id") @db.Uuid
+  audience  MomentAudience
+  expiresAt DateTime       @map("expires_at")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  author User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  snap   Snap         @relation(fields: [snapId], references: [id], onDelete: Cascade)
+  space  Space?       @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  views  MomentView[]
+
+  @@index([expiresAt])
+  @@index([authorId, createdAt])
+  @@index([snapId])
+  @@index([spaceId])
+  @@map("moments")
+}
+
+model MomentView {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  momentId  String   @map("moment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  moment Moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([momentId, userId])
+  @@index([userId])
+  @@map("moment_views")
+}
+
+model Post {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  authorId    String         @map("author_id") @db.Uuid
+  spaceId     String?        @map("space_id") @db.Uuid
+  /// The Document the Post was published from (CONTENT_POST or CONTENT_CAROUSEL).
+  documentId  String?        @map("document_id") @db.Uuid
+  caption     String
+  /// Without the leading #, lowercase.
+  hashtags    String[]       @default([])
+  visibility  PostVisibility @default(PUBLIC)
+  publishedAt DateTime       @default(now()) @map("published_at")
+  /// Set when an ADMIN hides the Post (moderation).
+  hiddenAt    DateTime?      @map("hidden_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  space    Space?      @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  document Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  media    PostMedia[]
+  likes    Like[]
+  comments Comment[]
+
+  @@index([authorId, publishedAt])
+  @@index([hashtags], type: Gin)
+  @@index([spaceId])
+  @@index([documentId])
+  @@map("posts")
+}
+
+model PostMedia {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  snapId    String   @map("snap_id") @db.Uuid
+  altText   String?  @map("alt_text")
+  order     Int      @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  snap Snap @relation(fields: [snapId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, snapId])
+  @@index([postId, order])
+  @@index([snapId])
+  @@map("post_media")
+}
+
+model Like {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  postId    String    @map("post_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  body      String
+  /// Set when an ADMIN hides the comment (moderation).
+  hiddenAt  DateTime? @map("hidden_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([userId])
+  @@map("comments")
+}
+
+/// A product rule that ADMINs can change without a deploy. Values come from
+/// prisma/seed-data/app-settings.json and are validated with the schemas of @snapia/shared.
+model AppSetting {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  key         String           @unique
+  value       Json
+  valueType   SettingValueType @map("value_type")
+  description String
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("app_settings")
 }

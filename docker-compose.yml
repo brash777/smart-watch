@@ -1,0 +1,71 @@
+# Local infrastructure for Snapia: PostgreSQL 16 and MinIO (S3-compatible storage).
+# Ports, users, passwords and the bucket name come from the root .env file
+# (cp .env.example .env). Start with `npm run db:up`, stop with `npm run db:down`.
+#
+# MinIO stopped publishing public images (minio/minio and quay.io/minio are no longer
+# available), so the MinIO server and its mc client come from Chainguard, which builds
+# them from the official MinIO sources. Chainguard's free images only have `latest`.
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:?Set POSTGRES_PORT in .env}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - '127.0.0.1:${MINIO_API_PORT:?Set MINIO_API_PORT in .env}:9000'
+      - '127.0.0.1:${MINIO_CONSOLE_PORT:?Set MINIO_CONSOLE_PORT in .env}:9001'
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # One-shot job: creates the bucket and the API's own MinIO user, then exits.
+  minio-init:
+    image: cgr.dev/chainguard/minio-client:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+      S3_BUCKET: ${S3_BUCKET:?Set S3_BUCKET in .env}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in .env}
+    entrypoint: ['bash', '-ec']
+    command:
+      - |
+        mc alias set minio http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing "minio/$$S3_BUCKET"
+        mc admin user add minio "$$S3_ACCESS_KEY" "$$S3_SECRET_KEY"
+        if ! output=$$(mc admin policy attach minio readwrite --user "$$S3_ACCESS_KEY" 2>&1); then
+          case "$$output" in
+            *already*) ;;
+            *) echo "$$output" >&2; exit 1 ;;
+          esac
+        fi
+        echo "Bucket $$S3_BUCKET and user $$S3_ACCESS_KEY are ready"
+
+volumes:
+  postgres-data:
+  minio-data:

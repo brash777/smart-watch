@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "name": "Ana Demo",
+      "username": "ana.demo",
+      "email": "ana.demo@example.com",
+      "password": "demo-password-ana",
+      "university": "Universidad Demo",
+      "bio": "Estudiante de ingeniería. Cuenta de demostración."
+    },
+    {
+      "name": "Leo Demo",
+      "username": "leo.demo",
+      "email": "leo.demo@example.com",
+      "password": "demo-password-leo",
+      "bio": "Técnico de instalaciones. Cuenta de demostración."
+    }
+  ],
+  "spaces": [
+    {
+      "id": "efc5401e-abb7-4efe-bfaf-fffecbc13d2d",
+      "owner": "ana.demo",
+      "name": "Cálculo II",
+      "description": "Apuntes de las clases de Cálculo II.",
+      "mode": "STUDY",
+      "color": "#4F46E5",
+      "visibility": "MEMBERS",
+      "metadata": {
+        "subject": "Cálculo II",
+        "professor": "Prof. Demo",
+        "semester": "2026-2"
+      },
+      "members": [{ "username": "leo.demo", "role": "EDITOR" }]
+    },
+    {
+      "id": "d07c8ba4-7eef-40ab-a2be-1a88a34b9a80",
+      "owner": "leo.demo",
+      "name": "Instalación sede norte",
+      "description": "Evidencias del montaje eléctrico de la sede norte.",
+      "mode": "WORK",
+      "color": "#F59E0B",
+      "visibility": "PRIVATE",
+      "metadata": {
+        "project": "Montaje eléctrico sede norte",
+        "client": "Cliente Demo",
+        "siteLabel": "Bloque B"
+      },
+      "members": []
+    },
+    {
+      "id": "1620bcdf-b1e1-4ef8-83b3-423e17ed8e85",
+      "owner": "ana.demo",
+      "name": "Cerámica hecha a mano",
+      "description": "Portafolio de piezas de cerámica artesanal.",
+      "mode": "CONTENT",
+      "color": "#EC4899",
+      "visibility": "PUBLIC",
+      "metadata": {
+        "niche": "cerámica artesanal"
+      },
+      "members": []
+    }
+  ]
+}

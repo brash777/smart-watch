@@ -25,6 +25,8 @@ Requirements: Node.js 22 (`nvm use`), npm and Docker.
 cp .env.example .env   # local configuration; never commit .env
 npm install            # installs every workspace and enables the git hooks
 npm run db:up          # starts PostgreSQL and MinIO and waits until they are healthy
+npm run db:migrate     # applies the database migrations
+npm run db:seed        # loads the settings, the first ADMIN and (optionally) demo data
 npm run dev            # runs the API in watch mode
 ```
 

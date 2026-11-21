@@ -1,0 +1,125 @@
+[
+  {
+    "key": "moment_ttl_hours",
+    "valueType": "NUMBER",
+    "value": 24,
+    "description": "Hours a Moment stays visible after it is shared."
+  },
+  {
+    "key": "max_snaps_per_space",
+    "valueType": "NUMBER",
+    "value": 1000,
+    "description": "Maximum number of snaps in one Space."
+  },
+  {
+    "key": "max_snaps_per_compose",
+    "valueType": "NUMBER",
+    "value": 20,
+    "description": "Maximum number of snaps selected for one Compose."
+  },
+  {
+    "key": "invite_code_length",
+    "valueType": "NUMBER",
+    "value": 8,
+    "description": "Number of characters of a SpaceInvite code."
+  },
+  {
+    "key": "invite_default_ttl_hours",
+    "valueType": "NUMBER",
+    "value": 168,
+    "description": "Hours an invite code stays valid when the OWNER does not choose (168 hours = 7 days)."
+  },
+  {
+    "key": "invite_default_max_uses",
+    "valueType": "NUMBER",
+    "value": 30,
+    "description": "Times an invite code can be used when the OWNER does not choose."
+  },
+  {
+    "key": "ai_output_language",
+    "valueType": "STRING",
+    "value": "es",
+    "description": "Language tag (BCP 47) of every text the AI writes."
+  },
+  {
+    "key": "content_caption_tone",
+    "valueType": "STRING",
+    "value": "cercano, claro y profesional",
+    "description": "Tone the AI uses when it writes captions in CONTENT Spaces."
+  },
+  {
+    "key": "default_hashtags",
+    "valueType": "STRING_LIST",
+    "value": ["snapia"],
+    "description": "Hashtags (lowercase, without #) suggested for every Post."
+  },
+  {
+    "key": "assignment_guide_notice",
+    "valueType": "STRING",
+    "value": "Esta guía no es un trabajo listo para entregar. Úsala para organizar tus ideas y redacta el trabajo con tus propias palabras.",
+    "description": "Academic integrity notice shown in every ASSIGNMENT_GUIDE and in its exports."
+  },
+  {
+    "key": "comment_max_length",
+    "valueType": "NUMBER",
+    "value": 500,
+    "description": "Maximum number of characters of a comment."
+  },
+  {
+    "key": "ask_history_max_messages",
+    "valueType": "NUMBER",
+    "value": 10,
+    "description": "Previous chat messages sent to the AI with each Ask question."
+  },
+  {
+    "key": "quiz_default_questions",
+    "valueType": "NUMBER",
+    "value": 10,
+    "description": "Questions of a generated quiz when the user does not choose."
+  },
+  {
+    "key": "flashcards_default_count",
+    "valueType": "NUMBER",
+    "value": 15,
+    "description": "Cards of a generated flashcard deck when the user does not choose."
+  },
+  {
+    "key": "trending_hashtags_days",
+    "valueType": "NUMBER",
+    "value": 7,
+    "description": "Days of posts counted to compute trending hashtags in Explore."
+  },
+  {
+    "key": "space_color_palette",
+    "valueType": "STRING_LIST",
+    "value": [
+      "#4F46E5",
+      "#0EA5E9",
+      "#10B981",
+      "#F59E0B",
+      "#EF4444",
+      "#EC4899",
+      "#8B5CF6",
+      "#14B8A6"
+    ],
+    "description": "Hex colors a Space can use."
+  },
+  {
+    "key": "analysis_poll_interval_ms",
+    "valueType": "NUMBER",
+    "value": 3000,
+    "description": "How often, in milliseconds, the web app checks snaps whose analysis is pending."
+  },
+  {
+    "key": "ai_cost_per_million_input_tokens",
+    "valueType": "NUMBER",
+    "value": 4,
+    "description": "USD per million input tokens of AI_MODEL (claude-opus-5-5: 4). Used to estimate AiRun costs."
+  },
+  {
+    "key": "ai_cost_per_million_output_tokens",
+    "valueType": "NUMBER",
+    "value": 20,
+    "description": "USD per million output tokens of AI_MODEL (claude-opus-5-5: 20). Used to estimate AiRun costs."
+  }
+]

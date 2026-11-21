@@ -74,6 +74,11 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 - **Post**: a permanent publication in the feed and in the user's portfolio, with one or several snaps, a caption and hashtags.
 - **AiRun**: the record of one AI call: task, model, tokens, estimated cost, duration and error (if any).
 
+### Supporting entities
+
+- **RefreshToken**: a long-lived session of a User. Only a hash of the token is stored, and it can be revoked.
+- **Follow**: a User following another User.
+
 ### Other terms
 
 - **Compose**: the action that turns several selected snaps into a Document.
@@ -91,6 +96,7 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 | Space mode               | `STUDY`, `WORK`, `CONTENT`                                                                                                          |
 | Space visibility         | `PRIVATE`, `MEMBERS`, `PUBLIC`                                                                                                      |
 | Space role (SpaceMember) | `OWNER`, `EDITOR`, `VIEWER`                                                                                                         |
+| Snap analysis status     | `PENDING`, `PROCESSING`, `DONE`, `FAILED`                                                                                           |
 | Document type            | `STUDY_NOTES`, `STUDY_SUMMARY`, `ASSIGNMENT_GUIDE`, `WORK_DAILY_REPORT`, `WORK_PROGRESS_REPORT`, `CONTENT_POST`, `CONTENT_CAROUSEL` |
 
 ---

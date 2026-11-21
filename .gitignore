@@ -5,6 +5,9 @@ node_modules/
 dist/
 build/
 
+# Generated Prisma client (npm install runs prisma generate)
+apps/api/src/generated/
+
 # Test output
 coverage/
 playwright-report/

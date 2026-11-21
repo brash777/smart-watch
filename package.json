@@ -22,10 +22,10 @@
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d --wait postgres minio && docker compose run --rm minio-init",
     "db:down": "docker compose down",
-    "db:migrate": "npm run db:migrate -w @snapia/api",
-    "db:generate": "npm run db:generate -w @snapia/api",
-    "db:seed": "npm run db:seed -w @snapia/api",
-    "db:studio": "npm run db:studio -w @snapia/api",
+    "db:migrate": "npm run db:migrate -w @snapia/api --",
+    "db:generate": "npm run db:generate -w @snapia/api --",
+    "db:seed": "npm run db:seed -w @snapia/api --",
+    "db:studio": "npm run db:studio -w @snapia/api --",
     "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {

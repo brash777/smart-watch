@@ -1,0 +1,221 @@
+// Snapia data model. Model names come from the glossary in docs/PRODUCT.md.
+//
+// Conventions (see the prisma-change skill):
+// - Models are PascalCase and singular; tables are snake_case and plural (@@map).
+// - Fields are camelCase; columns are snake_case (@map).
+// - Ids are UUIDs (version 7, time-ordered). Every model has createdAt and updatedAt.
+// - Deleting a user deletes everything that belongs to them (onDelete: Cascade).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum SpaceMode {
+  STUDY
+  WORK
+  CONTENT
+
+  @@map("space_mode")
+}
+
+enum SpaceRole {
+  OWNER
+  EDITOR
+  VIEWER
+
+  @@map("space_role")
+}
+
+enum Visibility {
+  PRIVATE
+  MEMBERS
+  PUBLIC
+
+  @@map("visibility")
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+
+  @@map("analysis_status")
+}
+
+// -----------------------------------------------------------------------------
+// Users and follows
+// -----------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  name         String
+  /// Unique public handle. Stored lowercase.
+  username     String   @unique
+  /// Stored lowercase.
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(USER)
+  bio          String?
+  /// Storage key of the profile photo.
+  avatarKey    String?  @map("avatar_key")
+  university   String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  refreshTokens    RefreshToken[]
+  following        Follow[]       @relation("FollowFollower")
+  followers        Follow[]       @relation("FollowFollowing")
+  ownedSpaces      Space[]
+  spaceMemberships SpaceMember[]
+  createdInvites   SpaceInvite[]
+  snaps            Snap[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  /// Hash of the token; the token itself is never stored.
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Follow {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  follower  User @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+// -----------------------------------------------------------------------------
+// Spaces and snaps
+// -----------------------------------------------------------------------------
+
+model Space {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  ownerId     String     @map("owner_id") @db.Uuid
+  name        String
+  description String?
+  mode        SpaceMode
+  /// Hex color from the space_color_palette setting.
+  color       String
+  visibility  Visibility @default(PRIVATE)
+  /// Mode-specific fields (subject, project, niche…), validated with the Zod schemas of @snapia/shared.
+  metadata    Json
+  coverSnapId String?    @unique @map("cover_snap_id") @db.Uuid
+  archivedAt  DateTime?  @map("archived_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  owner     User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  coverSnap Snap?         @relation("SpaceCover", fields: [coverSnapId], references: [id], onDelete: SetNull)
+  members   SpaceMember[]
+  invites   SpaceInvite[]
+  snaps     Snap[]        @relation("SpaceSnaps")
+
+  @@index([ownerId])
+  @@map("spaces")
+}
+
+model SpaceMember {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  spaceId   String    @map("space_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  role      SpaceRole
+  joinedAt  DateTime  @default(now()) @map("joined_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, userId])
+  @@index([userId])
+  @@map("space_members")
+}
+
+model SpaceInvite {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  spaceId     String    @map("space_id") @db.Uuid
+  code        String    @unique
+  /// Role granted to whoever joins with this code (EDITOR or VIEWER).
+  role        SpaceRole
+  expiresAt   DateTime  @map("expires_at")
+  maxUses     Int       @map("max_uses")
+  uses        Int       @default(0)
+  createdById String    @map("created_by_id") @db.Uuid
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([spaceId])
+  @@index([createdById])
+  @@map("space_invites")
+}
+
+model Snap {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  spaceId        String         @map("space_id") @db.Uuid
+  authorId       String         @map("author_id") @db.Uuid
+  /// Storage key of the photo (EXIF already removed).
+  storageKey     String         @map("storage_key")
+  thumbnailKey   String         @map("thumbnail_key")
+  width          Int
+  height         Int
+  sizeBytes      Int            @map("size_bytes")
+  mimeType       String         @map("mime_type")
+  note           String?
+  tags           String[]       @default([])
+  /// When the photo was taken, not when it was uploaded.
+  takenAt        DateTime       @default(now()) @map("taken_at")
+  analysisStatus AnalysisStatus @default(PENDING) @map("analysis_status")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  space   Space  @relation("SpaceSnaps", fields: [spaceId], references: [id], onDelete: Cascade)
+  author  User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coverOf Space? @relation("SpaceCover")
+
+  @@index([spaceId, takenAt])
+  @@index([analysisStatus])
+  @@index([authorId])
+  @@map("snaps")
+}

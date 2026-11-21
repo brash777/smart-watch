@@ -3,3 +3,4 @@ build
 coverage
 playwright-report
 package-lock.json
+apps/api/src/generated

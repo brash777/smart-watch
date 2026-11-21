@@ -1,0 +1,5 @@
+dist
+build
+coverage
+playwright-report
+package-lock.json

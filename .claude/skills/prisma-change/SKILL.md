@@ -56,6 +56,7 @@ model SpaceMember {
    ```
 
    `<description>` is snake_case and says what changed: `add_space_invites`, `add_taken_at_to_snaps`.
+
 3. **Review the generated SQL** in `apps/api/prisma/migrations/<timestamp>_<description>/migration.sql`:
    - A renamed field appears as `DROP COLUMN` + `ADD COLUMN`, which loses data. To fix the SQL before it runs, create the migration with `--create-only`, edit `migration.sql` (e.g. use `RENAME COLUMN`) and run `npm run db:migrate` again to apply it.
    - A new required column on a table that already has rows needs a default value or a backfill step.

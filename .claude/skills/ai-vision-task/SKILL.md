@@ -66,13 +66,13 @@ apps/api/src/modules/ai/
 
 Nothing about the model is written in code:
 
-| Setting | Source |
-| --- | --- |
+| Setting                                                                              | Source                 |
+| ------------------------------------------------------------------------------------ | ---------------------- |
 | Provider (`AI_PROVIDER`), model, max output tokens, effort, request timeout, retries | `config` (environment) |
-| Image size: maximum long edge, output format and quality | `config` |
-| Context limits: maximum snaps per request, maximum characters of notes and insights | `config` |
-| Output language (`ai_output_language`) | AppSetting |
-| Token prices per model, for cost estimates | AppSetting |
+| Image size: maximum long edge, output format and quality                             | `config`               |
+| Context limits: maximum snaps per request, maximum characters of notes and insights  | `config`               |
+| Output language (`ai_output_language`)                                               | AppSetting             |
+| Token prices per model, for cost estimates                                           | AppSetting             |
 
 - **Do not send `temperature`, `top_p` or `top_k`.** Current Claude models only accept their default sampling, and API version `2026-10-21` rejects these fields on every model with a 400. Use **effort** (`output_config.effort`: `low`, `medium`, `high`, `xhigh`, `max`) to trade quality against cost and latency. It can be set per task: snap analysis may run at a lower effort than Compose.
 - Keep the system prompt and the tool definition identical between calls of the same task (no timestamps or ids in them) so prompt caching can apply.

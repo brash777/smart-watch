@@ -1,0 +1,41 @@
+{
+  "name": "snapia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Snapia: AI instant-photo app (a Smart Wash project)",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --prefix-colors auto \"npm:dev:*\"",
+    "dev:api": "npm run dev -w @snapia/api",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d --wait postgres minio && docker compose run --rm minio-init",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @snapia/api",
+    "db:generate": "npm run db:generate -w @snapia/api",
+    "db:seed": "npm run db:seed -w @snapia/api",
+    "db:studio": "npm run db:studio -w @snapia/api",
+    "prepare": "git config core.hooksPath .githooks"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0"
+  }
+}

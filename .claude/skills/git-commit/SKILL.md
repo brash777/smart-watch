@@ -63,7 +63,7 @@ Conventional Commits, in English:
 - **scope** (optional): the area in kebab-case, e.g. `api`, `web`, `shared`, `db`, `ai`, `spaces`, `snaps`, `skills`.
 - **description**: imperative mood ("add", not "added" or "adds"), lowercase start, no final period.
 - The first line has **at most 72 characters**.
-- The body is optional. It explains *why*, not *what*, with lines wrapped at 72 characters.
+- The body is optional. It explains _why_, not _what_, with lines wrapped at 72 characters.
 
 Examples:
 

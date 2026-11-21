@@ -56,32 +56,32 @@ Read [`docs/PRODUCT.md`](../../../docs/PRODUCT.md) before you start. **Its gloss
 
 Where new code goes:
 
-| You are adding… | Put it in… | Skill |
-| --- | --- | --- |
-| An API endpoint or backend feature | `apps/api/src/modules/<feature>/` | `api-module` |
-| An AI task or prompt | `apps/api/src/modules/ai/` | `ai-vision-task` |
-| A table, column, relation or seed data | `apps/api/prisma/` | `prisma-change` |
-| A screen or component | `apps/web/src/features/<feature>/` (or `apps/web/src/components/` if reused) | `react-feature` |
-| A schema or type used by both api and web | `packages/shared/src/` | — |
-| A commit, push or pull request | — | `git-commit` |
+| You are adding…                           | Put it in…                                                                   | Skill            |
+| ----------------------------------------- | ---------------------------------------------------------------------------- | ---------------- |
+| An API endpoint or backend feature        | `apps/api/src/modules/<feature>/`                                            | `api-module`     |
+| An AI task or prompt                      | `apps/api/src/modules/ai/`                                                   | `ai-vision-task` |
+| A table, column, relation or seed data    | `apps/api/prisma/`                                                           | `prisma-change`  |
+| A screen or component                     | `apps/web/src/features/<feature>/` (or `apps/web/src/components/` if reused) | `react-feature`  |
+| A schema or type used by both api and web | `packages/shared/src/`                                                       | —                |
+| A commit, push or pull request            | —                                                                            | `git-commit`     |
 
 Never duplicate a schema or a type in `apps/api` and `apps/web`: define it once in `packages/shared` and import it from both.
 
 ## 3. Naming
 
-| What | Convention | Example |
-| --- | --- | --- |
-| Files and folders | kebab-case | `space-invite.service.ts`, `snap-card.tsx`, `seed-data/` |
-| React components | PascalCase (the file is still kebab-case) | `snap-card.tsx` exports `SnapCard` |
-| Variables, functions, hooks | camelCase | `takenAt`, `createSpace`, `useSpaceSnaps` |
-| Types, interfaces, classes | PascalCase | `AppError`, `CreateSpaceInput` |
-| Zod schemas | camelCase ending in `Schema` | `createSpaceSchema` |
-| Environment variables | UPPER_SNAKE_CASE | `DATABASE_URL`, `AI_PROVIDER` |
-| Enum values and error codes | UPPER_SNAKE_CASE | `WORK_DAILY_REPORT`, `SPACE_NOT_FOUND` |
-| Prisma models | PascalCase, singular, from the glossary | `SpaceMember` |
-| Database tables | snake_case, plural, with `@@map` | `@@map("space_members")` |
-| Database columns | snake_case with `@map` | `takenAt DateTime @map("taken_at")` |
-| i18n keys | dot-separated, grouped by feature, camelCase segments | `spaces.createForm.nameLabel` |
+| What                        | Convention                                            | Example                                                  |
+| --------------------------- | ----------------------------------------------------- | -------------------------------------------------------- |
+| Files and folders           | kebab-case                                            | `space-invite.service.ts`, `snap-card.tsx`, `seed-data/` |
+| React components            | PascalCase (the file is still kebab-case)             | `snap-card.tsx` exports `SnapCard`                       |
+| Variables, functions, hooks | camelCase                                             | `takenAt`, `createSpace`, `useSpaceSnaps`                |
+| Types, interfaces, classes  | PascalCase                                            | `AppError`, `CreateSpaceInput`                           |
+| Zod schemas                 | camelCase ending in `Schema`                          | `createSpaceSchema`                                      |
+| Environment variables       | UPPER_SNAKE_CASE                                      | `DATABASE_URL`, `AI_PROVIDER`                            |
+| Enum values and error codes | UPPER_SNAKE_CASE                                      | `WORK_DAILY_REPORT`, `SPACE_NOT_FOUND`                   |
+| Prisma models               | PascalCase, singular, from the glossary               | `SpaceMember`                                            |
+| Database tables             | snake_case, plural, with `@@map`                      | `@@map("space_members")`                                 |
+| Database columns            | snake_case with `@map`                                | `takenAt DateTime @map("taken_at")`                      |
+| i18n keys                   | dot-separated, grouped by feature, camelCase segments | `spaces.createForm.nameLabel`                            |
 
 ## 4. Language
 
@@ -93,15 +93,15 @@ Never duplicate a schema or a type in `apps/api` and `apps/web`: define it once 
 
 Never write URLs, ports, credentials, keys, the app name, AI model names, limits, thresholds or durations in code. Not as defaults and not "for now".
 
-| Value | Where it lives | How code reads it |
-| --- | --- | --- |
-| Secrets, credentials, API keys, URLs, ports | `.env` (documented in `.env.example`), validated with Zod in `apps/api/src/config` | the typed `config` object |
-| App name, AI provider and model, AI limits (tokens, timeout, retries, image size, context size), pagination limits | `.env` + Zod config | `config` |
-| Web app settings (API base URL, …) | `VITE_*` variables of `apps/web` | `import.meta.env.VITE_*`, read in one typed module |
-| Product rules (Moment duration, invite defaults, AI output language, AI token prices, …) | `AppSetting` table, seeded from `apps/api/prisma/seed-data/*.json` | the settings service |
-| User-facing text | `apps/web/src/i18n/locales/es.json` | `t('key')` |
-| AI prompts | versioned files in `apps/api/src/modules/ai/prompts/` | the prompt loader (`{{placeholders}}`) |
-| Colors, spacing, radii | CSS variables + `tailwind.config` | token classes |
+| Value                                                                                                              | Where it lives                                                                     | How code reads it                                  |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Secrets, credentials, API keys, URLs, ports                                                                        | `.env` (documented in `.env.example`), validated with Zod in `apps/api/src/config` | the typed `config` object                          |
+| App name, AI provider and model, AI limits (tokens, timeout, retries, image size, context size), pagination limits | `.env` + Zod config                                                                | `config`                                           |
+| Web app settings (API base URL, …)                                                                                 | `VITE_*` variables of `apps/web`                                                   | `import.meta.env.VITE_*`, read in one typed module |
+| Product rules (Moment duration, invite defaults, AI output language, AI token prices, …)                           | `AppSetting` table, seeded from `apps/api/prisma/seed-data/*.json`                 | the settings service                               |
+| User-facing text                                                                                                   | `apps/web/src/i18n/locales/es.json`                                                | `t('key')`                                         |
+| AI prompts                                                                                                         | versioned files in `apps/api/src/modules/ai/prompts/`                              | the prompt loader (`{{placeholders}}`)             |
+| Colors, spacing, radii                                                                                             | CSS variables + `tailwind.config`                                                  | token classes                                      |
 
 **Rule of thumb:** if an admin should be able to change it without a deploy, it is an AppSetting; if it depends on the environment or it is a secret, it is an environment variable; if the user reads it, it goes in `es.json`.
 

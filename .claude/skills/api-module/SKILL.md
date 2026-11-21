@@ -107,21 +107,31 @@ Use cursor pagination:
 
 Use Supertest against the Express app: no real network and no real AI (`MockAiProvider`). Every endpoint covers at least:
 
-| Case | Expected |
-| --- | --- |
-| Happy path | 200 or 201 and the `{ data, meta }` shape |
-| Invalid input | 400 with `error.code` and `error.details` |
-| No session | 401 |
-| Not allowed (role too low, not the author, not an ADMIN) | 403 |
-| Not found (missing id, or a Space the caller cannot see) | 404 |
+| Case                                                     | Expected                                  |
+| -------------------------------------------------------- | ----------------------------------------- |
+| Happy path                                               | 200 or 201 and the `{ data, meta }` shape |
+| Invalid input                                            | 400 with `error.code` and `error.details` |
+| No session                                               | 401                                       |
+| Not allowed (role too low, not the author, not an ADMIN) | 403                                       |
+| Not found (missing id, or a Space the caller cannot see) | 404                                       |
 
 ```ts
 describe('POST /spaces/:spaceId/invites', () => {
-  it('creates an invite for the OWNER', async () => { /* … */ });
-  it('returns 400 when the body is invalid', async () => { /* … */ });
-  it('returns 401 without a session', async () => { /* … */ });
-  it('returns 403 for an EDITOR', async () => { /* … */ });
-  it('returns 404 when the Space does not exist', async () => { /* … */ });
+  it('creates an invite for the OWNER', async () => {
+    /* … */
+  });
+  it('returns 400 when the body is invalid', async () => {
+    /* … */
+  });
+  it('returns 401 without a session', async () => {
+    /* … */
+  });
+  it('returns 403 for an EDITOR', async () => {
+    /* … */
+  });
+  it('returns 404 when the Space does not exist', async () => {
+    /* … */
+  });
 });
 ```
 
@@ -134,7 +144,13 @@ Each test creates the data it needs (users, Spaces, memberships) and does not de
 ```
 
 ```json
-{ "error": { "code": "VALIDATION_ERROR", "message": "Invalid request", "details": [{ "path": "body.maxUses", "message": "Expected number" }] } }
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "details": [{ "path": "body.maxUses", "message": "Expected number" }]
+  }
+}
 ```
 
 ## 4. Checklist

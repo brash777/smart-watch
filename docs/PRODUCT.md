@@ -31,12 +31,12 @@ People already photograph what matters: the whiteboard at the end of a lecture, 
 
 ### Who it is for
 
-| Audience | What they capture | What they get | Main mode |
-| --- | --- | --- | --- |
-| University students | Whiteboards, slides, notebooks, book pages | Notes, summaries, flashcards, quizzes, assignment guides and a chat with their notes | STUDY |
-| Interns and technicians | Tasks, progress, installations | Daily and progress reports with a timeline and photo evidence | WORK |
-| Work teams | The same, from several people | One shared report built from everyone's snaps | WORK |
-| Creators and entrepreneurs | Products, events, projects | Photo feedback, captions, hashtags, alt text, posts and a public portfolio | CONTENT |
+| Audience                   | What they capture                          | What they get                                                                        | Main mode |
+| -------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ | --------- |
+| University students        | Whiteboards, slides, notebooks, book pages | Notes, summaries, flashcards, quizzes, assignment guides and a chat with their notes | STUDY     |
+| Interns and technicians    | Tasks, progress, installations             | Daily and progress reports with a timeline and photo evidence                        | WORK      |
+| Work teams                 | The same, from several people              | One shared report built from everyone's snaps                                        | WORK      |
+| Creators and entrepreneurs | Products, events, projects                 | Photo feedback, captions, hashtags, alt text, posts and a public portfolio           | CONTENT   |
 
 ### Product principles
 
@@ -85,13 +85,13 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 
 ### Enumerated values
 
-| Concept | Values |
-| --- | --- |
-| Global role (User) | `USER`, `ADMIN` |
-| Space mode | `STUDY`, `WORK`, `CONTENT` |
-| Space visibility | `PRIVATE`, `MEMBERS`, `PUBLIC` |
-| Space role (SpaceMember) | `OWNER`, `EDITOR`, `VIEWER` |
-| Document type | `STUDY_NOTES`, `STUDY_SUMMARY`, `ASSIGNMENT_GUIDE`, `WORK_DAILY_REPORT`, `WORK_PROGRESS_REPORT`, `CONTENT_POST`, `CONTENT_CAROUSEL` |
+| Concept                  | Values                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Global role (User)       | `USER`, `ADMIN`                                                                                                                     |
+| Space mode               | `STUDY`, `WORK`, `CONTENT`                                                                                                          |
+| Space visibility         | `PRIVATE`, `MEMBERS`, `PUBLIC`                                                                                                      |
+| Space role (SpaceMember) | `OWNER`, `EDITOR`, `VIEWER`                                                                                                         |
+| Document type            | `STUDY_NOTES`, `STUDY_SUMMARY`, `ASSIGNMENT_GUIDE`, `WORK_DAILY_REPORT`, `WORK_PROGRESS_REPORT`, `CONTENT_POST`, `CONTENT_CAROUSEL` |
 
 ---
 
@@ -209,11 +209,11 @@ EXIF metadata, including the GPS location, is removed from every photo at upload
 
 Spaces are `PRIVATE` by default.
 
-| Visibility | Who can see the Space and its snaps |
-| --- | --- |
-| `PRIVATE` | Only its OWNER |
-| `MEMBERS` | Its members, according to their role |
-| `PUBLIC` | Anyone, read-only. Members contribute according to their role |
+| Visibility | Who can see the Space and its snaps                           |
+| ---------- | ------------------------------------------------------------- |
+| `PRIVATE`  | Only its OWNER                                                |
+| `MEMBERS`  | Its members, according to their role                          |
+| `PUBLIC`   | Anyone, read-only. Members contribute according to their role |
 
 ### Snaps outside their Space
 
@@ -221,14 +221,14 @@ A snap is visible only to the people who can see its Space. Anyone else can see 
 
 ### Space roles
 
-| Action | OWNER | EDITOR | VIEWER |
-| --- | :---: | :---: | :---: |
-| See the Space, its snaps, insights, documents, flashcards and quizzes | ✓ | ✓ | ✓ |
-| Upload snaps | ✓ | ✓ | — |
-| Compose documents, generate flashcards and quizzes, use Ask | ✓ | ✓ | — |
-| Edit or delete their own snaps and documents | ✓ | ✓ | — |
-| Edit or delete any snap or document in the Space | ✓ | — | — |
-| Edit the Space, manage invites and members, delete the Space | ✓ | — | — |
+| Action                                                                | OWNER | EDITOR | VIEWER |
+| --------------------------------------------------------------------- | :---: | :----: | :----: |
+| See the Space, its snaps, insights, documents, flashcards and quizzes |   ✓   |   ✓    |   ✓    |
+| Upload snaps                                                          |   ✓   |   ✓    |   —    |
+| Compose documents, generate flashcards and quizzes, use Ask           |   ✓   |   ✓    |   —    |
+| Edit or delete their own snaps and documents                          |   ✓   |   ✓    |   —    |
+| Edit or delete any snap or document in the Space                      |   ✓   |   —    |   —    |
+| Edit the Space, manage invites and members, delete the Space          |   ✓   |   —    |   —    |
 
 ### Admins and private content
 
@@ -263,8 +263,8 @@ Not planned for now:
 
 Monorepo with npm workspaces:
 
-| Package | Stack |
-| --- | --- |
-| `apps/api` | Node 22, Express, TypeScript, Prisma, PostgreSQL, MinIO/S3 for photo storage, Claude API with vision |
-| `apps/web` | React, Vite, TypeScript, Tailwind CSS, PWA |
-| `packages/shared` | Zod schemas and TypeScript types shared by the API and the web app |
+| Package           | Stack                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| `apps/api`        | Node 22, Express, TypeScript, Prisma, PostgreSQL, MinIO/S3 for photo storage, Claude API with vision |
+| `apps/web`        | React, Vite, TypeScript, Tailwind CSS, PWA                                                           |
+| `packages/shared` | Zod schemas and TypeScript types shared by the API and the web app                                   |

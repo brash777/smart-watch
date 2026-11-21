@@ -167,3 +167,19 @@ Body: `{ "isActive": false }` or `{ "isActive": true }`. Deactivating an account
 Body: `{ "role": "ADMIN" }` or `{ "role": "USER" }`. The new role applies to the user's next request. **200** with the admin user.
 
 Errors of both: `400 VALIDATION_ERROR`, `400 CANNOT_MODIFY_YOURSELF` (ADMINs cannot change their own role or status), `404 USER_NOT_FOUND`.
+
+## Follows
+
+### `POST /api/users/:username/follow` and `DELETE /api/users/:username/follow`
+
+Require a session. Follow or unfollow a user. Both are idempotent: repeating them changes nothing and gives the same answer.
+
+```json
+{ "data": { "username": "leo.demo", "isFollowedByMe": true, "followersCount": 11 } }
+```
+
+Errors: `400 CANNOT_FOLLOW_YOURSELF`, `401 UNAUTHENTICATED`, `404 USER_NOT_FOUND` (unknown or deactivated user).
+
+### `GET /api/users/:username/followers` and `GET /api/users/:username/following`
+
+Public. The users who follow `:username`, or whom `:username` follows, newest follow first, paginated. Deactivated users are left out. **200** with a page of user summaries. Errors: `404 USER_NOT_FOUND`.

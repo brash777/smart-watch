@@ -19,6 +19,8 @@ import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
 import { createSettingsRepository } from './modules/settings/settings.repository';
 import { createSettingsService } from './modules/settings/settings.service';
+import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.routes';
+import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
 import { createSpacesRouter } from './modules/spaces/spaces.routes';
 import { createAdminUsersRouter, createUsersRouter } from './modules/users/users.routes';
@@ -78,6 +80,21 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
       settings,
       authenticate,
       optionalAuth,
+      requireSpaceRole,
+    }),
+  );
+  api.use(
+    '/spaces',
+    createSpaceMembersRouter({ config, prisma, authenticate, optionalAuth, requireSpaceRole }),
+  );
+  api.use(
+    '/spaces',
+    createSpaceInvitesRouter({
+      config,
+      prisma,
+      spaces: spacesRepository,
+      settings,
+      authenticate,
       requireSpaceRole,
     }),
   );

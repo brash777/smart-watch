@@ -169,11 +169,11 @@ Every Space has exactly one mode, chosen when the Space is created. The mode dec
 
 A Space can be shared so that several people add snaps to it.
 
-1. To share a Space, its OWNER sets the visibility to `MEMBERS` (or `PUBLIC`) and generates a SpaceInvite: a code that grants a role (`EDITOR` or `VIEWER`), expires on a date and accepts a maximum number of uses.
-2. A registered user who enters a valid code joins the Space as a SpaceMember with that role.
+1. To share a Space, its OWNER generates a SpaceInvite: a code that grants a role (`EDITOR` or `VIEWER`), expires on a date and accepts a maximum number of uses (by default the `invite_default_ttl_hours` and `invite_default_max_uses` settings). Inviting people shares the Space: a `PRIVATE` Space becomes `MEMBERS`.
+2. A registered user who enters a valid code joins the Space as a SpaceMember with that role. Entering the code again changes nothing and spends no use.
 3. EDITORs upload snaps. Every member sees the Space according to their role.
 4. Compose can use the snaps of all members. The Document keeps track of which snaps it used.
-5. The OWNER can revoke invites, change roles and remove members. Any member can leave the Space.
+5. The OWNER can revoke invites, change roles and remove members. Any member can leave the Space, but a Space always keeps at least one OWNER: the last OWNER can neither leave nor stop being an OWNER. A removed member's snaps stay in the Space.
 
 > **Example.** In a STUDY Space for a class, each classmate photographs a different part of the whiteboard. One of them selects all those snaps and runs Compose with `STUDY_NOTES`, and the AI builds the complete notes of the class from everyone's photos.
 

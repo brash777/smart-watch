@@ -237,3 +237,71 @@ Requires a session. The Spaces you own or joined, newest first, paginated. Filte
 ### `POST /api/spaces/:spaceId/archive` and `POST /api/spaces/:spaceId/unarchive`
 
 `OWNER`. Archives or restores the Space (idempotent). An archived Space accepts no new snaps, invites or members. **200** with the Space.
+
+## Space members
+
+A **member** is `{ "user": <user summary>, "role": "EDITOR", "joinedAt": "…" }`. A Space always keeps at least one `OWNER`; when the user recorded as the Space's owner stops being an OWNER, the OWNER who joined first takes over.
+
+### `GET /api/spaces/:spaceId/members`
+
+`VIEWER` (or anyone, for a `PUBLIC` Space). Active members, OWNERs first, then by join date, paginated.
+
+### `PATCH /api/spaces/:spaceId/members/:userId`
+
+`OWNER`. Body: `{ "role": "OWNER" | "EDITOR" | "VIEWER" }`. **200** with the member. Errors: `404 MEMBER_NOT_FOUND`, `409 LAST_OWNER`, `409 SPACE_IS_PRIVATE` (a `PRIVATE` Space only has OWNERs).
+
+### `DELETE /api/spaces/:spaceId/members/:userId`
+
+`OWNER`. Removes the member; their snaps stay in the Space. **204**. Errors: `404 MEMBER_NOT_FOUND`, `409 LAST_OWNER`.
+
+### `POST /api/spaces/:spaceId/leave`
+
+Any member. **204**. Errors: `409 LAST_OWNER`, `409 NOT_A_MEMBER` (for example a visitor of a `PUBLIC` Space).
+
+## Space invites
+
+An **invite** as its OWNERs see it:
+
+```json
+{
+  "id": "0196…",
+  "code": "K7QM2XPA",
+  "role": "EDITOR",
+  "expiresAt": "2026-11-28T18:00:00.000Z",
+  "maxUses": 30,
+  "uses": 1,
+  "revokedAt": null,
+  "createdAt": "2026-11-21T18:00:00.000Z",
+  "status": "ACTIVE"
+}
+```
+
+`status` is `ACTIVE`, `EXPIRED`, `REVOKED` or `USED_UP`. Codes have `invite_code_length` characters drawn from a secure random source, without the confusing `I`, `L`, `O`, `0` and `1`.
+
+### `POST /api/spaces/:spaceId/invites`
+
+`OWNER`. Body: `role` (`EDITOR` or `VIEWER`), optional `expiresInHours` and `maxUses` (the `invite_default_ttl_hours` and `invite_default_max_uses` settings otherwise). A `PRIVATE` Space becomes `MEMBERS`. **201** with the invite. Errors: `400 VALIDATION_ERROR`, `409 SPACE_ARCHIVED`.
+
+### `GET /api/spaces/:spaceId/invites`
+
+`OWNER`. Every invite of the Space, newest first, with its status.
+
+### `DELETE /api/spaces/:spaceId/invites/:inviteId`
+
+`OWNER`. Revokes the invite (idempotent). **204**. Errors: `404 INVITE_NOT_FOUND`.
+
+### `POST /api/spaces/join`
+
+Requires a session; limited like login (`AUTH_RATE_LIMIT_MAX`). Body: `{ "code": "K7QM-2XPA" }` (case, spaces and dashes are ignored). The use is spent atomically, so two people can never take the last one.
+
+```json
+{
+  "data": {
+    "space": { "id": "0196…", "myRole": "EDITOR" },
+    "role": "EDITOR",
+    "alreadyMember": false
+  }
+}
+```
+
+(`space` is the full Space.) A member who enters a code again gets `alreadyMember: true`, keeps their role and spends no use. Errors: `404 INVITE_NOT_FOUND`, `410 INVITE_REVOKED`, `410 INVITE_EXPIRED`, `410 INVITE_USED_UP`, `409 SPACE_ARCHIVED`, `409 SPACE_IS_PRIVATE`.

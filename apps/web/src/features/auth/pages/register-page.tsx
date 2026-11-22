@@ -35,7 +35,11 @@ export function RegisterPage() {
       footer={
         <p>
           {t('auth.register.hasAccount')}{' '}
-          <Link to={paths.login} state={returnState} className="font-semibold underline">
+          <Link
+            to={paths.login}
+            state={returnState}
+            className="font-semibold text-ink underline underline-offset-4"
+          >
             {t('auth.register.toLogin')}
           </Link>
         </p>

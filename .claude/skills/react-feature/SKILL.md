@@ -57,8 +57,8 @@ export const spaceKeys = {
 
 ## 5. Design tokens and Space modes
 
-- Colors, spacing and radii (and shadows and typography) are tokens: CSS variables in the global stylesheet, exposed through `tailwind.config`. Components use token classes (`bg-surface`, `text-muted`, `rounded-card`), never raw hex colors or arbitrary values such as `bg-[#…]` or `p-[13px]`.
-- Each Space mode (STUDY, WORK, CONTENT) has its color token, icon and label key defined in **one configuration file** (e.g. `src/lib/space-modes.ts`). Components read from it; they never `switch` on the mode to pick colors or icons.
+- Colors, spacing and radii (and shadows and typography) are tokens: CSS variables in `src/styles/tokens.css` (light and dark), exposed to Tailwind 4 with `@theme` (there is no `tailwind.config`). Tailwind's default palette, radii and fonts are turned off there, so only token classes exist. Components use token classes (`bg-surface`, `text-muted`, `rounded-card`), never raw hex colors or arbitrary values such as `bg-[#…]` or `p-[13px]`.
+- Each Space mode (STUDY, WORK, CONTENT) has its color token, icon and label key defined in **one configuration file**: `src/config/modes.ts`. Components read from it; they never `switch` on the mode to pick colors or icons.
 - For visual decisions (layout, typography, motion, overall look), use the `frontend-design` skill if it is installed.
 
 ## 6. Mobile first, Instagram-like

@@ -35,7 +35,11 @@ export function LoginPage() {
       footer={
         <p>
           {t('auth.login.noAccount')}{' '}
-          <Link to={paths.register} state={returnState} className="font-semibold underline">
+          <Link
+            to={paths.register}
+            state={returnState}
+            className="font-semibold text-ink underline underline-offset-4"
+          >
             {t('auth.login.toRegister')}
           </Link>
         </p>

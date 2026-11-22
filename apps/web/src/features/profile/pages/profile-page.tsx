@@ -16,7 +16,7 @@ export function ProfilePage() {
       <PageHeader title={t('profile.title')} />
       <section className="flex flex-col gap-1">
         <p className="text-lg font-semibold">{user.name}</p>
-        <p>{t('profile.username', { username: user.username })}</p>
+        <p className="text-muted">{t('profile.username', { username: user.username })}</p>
       </section>
       <Button
         disabled={logout.isPending}

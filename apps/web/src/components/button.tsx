@@ -9,7 +9,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`inline-flex min-h-12 w-full items-center justify-center px-4 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`inline-flex min-h-12 w-full items-center justify-center rounded-control bg-ink px-4 font-semibold text-on-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       {...props}
     />
   );

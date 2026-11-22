@@ -1,7 +1,8 @@
 {
   "app": {
     "tagline": "Toma la foto. La IA hace el resto.",
-    "loading": "Cargando…"
+    "loading": "Cargando…",
+    "description": "Toma fotos rápidas y la IA las convierte en apuntes, informes y contenido."
   },
   "nav": {
     "label": "Navegación principal",
@@ -10,6 +11,20 @@
     "capture": "Tomar un snap",
     "explore": "Explorar",
     "profile": "Perfil"
+  },
+  "modes": {
+    "STUDY": {
+      "label": "Estudio",
+      "description": "Pizarras, diapositivas y cuadernos que se vuelven apuntes, resúmenes y quizzes."
+    },
+    "WORK": {
+      "label": "Trabajo",
+      "description": "Fotos de tareas y avances que se vuelven informes con evidencia."
+    },
+    "CONTENT": {
+      "label": "Contenido",
+      "description": "Productos y eventos que se vuelven posts y tu portafolio."
+    }
   },
   "auth": {
     "login": {
@@ -59,7 +74,8 @@
   },
   "spaces": {
     "title": "Espacios",
-    "intro": "Aquí verás tus Espacios de estudio, de trabajo y de contenido."
+    "intro": "Aquí verás tus Espacios de estudio, de trabajo y de contenido.",
+    "modesTitle": "Cada Espacio tiene un modo"
   },
   "capture": {
     "title": "Nuevo snap",

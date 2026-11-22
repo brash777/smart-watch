@@ -21,11 +21,11 @@ export function TextField({ label, error, ref, className = '', ...input }: TextF
         ref={ref}
         aria-invalid={error === undefined ? undefined : true}
         aria-describedby={error === undefined ? undefined : errorId}
-        className={`min-h-12 w-full px-3 text-base ${className}`}
+        className={`min-h-12 w-full rounded-control border border-field-border bg-surface px-3 text-base text-ink aria-invalid:border-danger ${className}`}
         {...input}
       />
       {error === undefined ? null : (
-        <p id={errorId} className="text-sm">
+        <p id={errorId} className="text-sm text-danger">
           {error}
         </p>
       )}

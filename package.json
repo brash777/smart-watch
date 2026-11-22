@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --prefix-colors auto \"npm:dev:*\"",
     "dev:api": "npm run dev -w @snapia/api",
-    "dev:web": "npm run dev -w @snapia/web",
+    "dev:web": "npm run dev -w @snapia/web --",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",

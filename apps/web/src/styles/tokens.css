@@ -1,0 +1,76 @@
+/*
+ * Design tokens of Snapia. Components use them only through the Tailwind utilities generated
+ * below (bg-canvas, text-muted, rounded-control, font-display…), never raw colors.
+ *
+ * The palette is cool and quiet so photos stand out. The one bold element is the colour of the
+ * three Space modes, which also form the brand mark: STUDY ink blue, WORK safety orange,
+ * CONTENT magenta.
+ */
+
+:root {
+  --canvas: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #15171b;
+  --on-ink: #ffffff;
+  --muted: #5c6370;
+  --line: #dfe2e8;
+  /* Field borders keep 3:1 against the surface (WCAG non-text contrast). */
+  --field-border: #8a909c;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --focus: #2f5bea;
+  --mode-study: #2f5bea;
+  --mode-work: #d9480f;
+  --mode-content: #b8327a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0f1115;
+    --surface: #181b21;
+    --ink: #eceef2;
+    --on-ink: #15171b;
+    --muted: #9aa1ad;
+    --line: #262a32;
+    --field-border: #6b7280;
+    --danger: #ff8a80;
+    --danger-soft: #3a1a1a;
+    --focus: #7b98ff;
+    --mode-study: #7b98ff;
+    --mode-work: #ff8a4c;
+    --mode-content: #f06baa;
+    color-scheme: dark;
+  }
+}
+
+/* Only these tokens exist as Tailwind utilities: the default palette, radii and fonts are off. */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+  --spacing-nav: 4rem;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-on-ink: var(--on-ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-field-border: var(--field-border);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-focus: var(--focus);
+  --color-mode-study: var(--mode-study);
+  --color-mode-work: var(--mode-work);
+  --color-mode-content: var(--mode-content);
+
+  --radius-control: 0.875rem;
+  --radius-card: 1.25rem;
+
+  /* The display face carries the brand: the app name and the screen titles. Text stays native. */
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

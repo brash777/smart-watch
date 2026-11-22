@@ -238,6 +238,12 @@ Spaces are `PRIVATE` by default.
 | `MEMBERS`  | Its members, according to their role                          |
 | `PUBLIC`   | Anyone, read-only. Members contribute according to their role |
 
+A `PRIVATE` Space only has OWNERs as members, so it cannot become `PRIVATE` while other members remain.
+
+### Archived Spaces
+
+An OWNER can archive a Space: it leaves the main list of Spaces and accepts no new snaps, invites or members, but everything in it can still be read. Unarchiving it brings it back.
+
 ### Snaps outside their Space
 
 A snap is visible only to the people who can see its Space. Anyone else can see it only if its author publishes it as a Post or a Moment. Only the author of a snap can publish it.

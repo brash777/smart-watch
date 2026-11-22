@@ -183,3 +183,57 @@ Errors: `400 CANNOT_FOLLOW_YOURSELF`, `401 UNAUTHENTICATED`, `404 USER_NOT_FOUND
 ### `GET /api/users/:username/followers` and `GET /api/users/:username/following`
 
 Public. The users who follow `:username`, or whom `:username` follows, newest follow first, paginated. Deactivated users are left out. **200** with a page of user summaries. Errors: `404 USER_NOT_FOUND`.
+
+## Spaces
+
+### Access to a Space
+
+Every route under `/api/spaces/:spaceId` checks the caller's access before anything else:
+
+- members act with their role: `VIEWER` < `EDITOR` < `OWNER`;
+- in a `PUBLIC` Space, anyone (even without a session) may read, as a `VIEWER`;
+- `404 SPACE_NOT_FOUND`: the Space does not exist or the id is malformed;
+- `401 UNAUTHENTICATED`: no session and the Space is not `PUBLIC`;
+- `403 FORBIDDEN`: not a member of a `PRIVATE` or `MEMBERS` Space, or a role below the one the route needs.
+
+A **Space** in responses:
+
+```json
+{
+  "id": "0196…",
+  "name": "Cálculo II",
+  "description": "Apuntes de las clases.",
+  "mode": "STUDY",
+  "color": "#4F46E5",
+  "visibility": "PRIVATE",
+  "metadata": { "subject": "Cálculo II", "professor": "Prof. Demo" },
+  "coverSnapId": null,
+  "archivedAt": null,
+  "createdAt": "2026-11-21T18:00:00.000Z",
+  "owner": { "id": "0196…", "name": "Ana Demo", "username": "ana.demo", "avatarUrl": null },
+  "counts": { "snaps": 0, "members": 1 },
+  "myRole": "OWNER"
+}
+```
+
+`myRole` is `null` when you see a `PUBLIC` Space without being a member. `metadata` depends on the mode: `subject`, `professor`, `semester` (STUDY); `project`, `client`, `siteLabel` (WORK); `niche` (CONTENT). Every field is optional and fields of another mode are rejected.
+
+### `POST /api/spaces`
+
+Requires a session. Body: `name`, `mode` (`STUDY`, `WORK` or `CONTENT`), `color` (one of the `space_color_palette` setting), optional `description`, `visibility` (`PRIVATE` when omitted) and `metadata`. The creator becomes an `OWNER` member. **201** with the Space. Errors: `400 VALIDATION_ERROR`, `400 COLOR_NOT_IN_PALETTE` (`details.palette` lists the allowed colors).
+
+### `GET /api/spaces`
+
+Requires a session. The Spaces you own or joined, newest first, paginated. Filters: `mode`, and `archived=true` to list only archived Spaces (they are left out otherwise).
+
+### `GET /api/spaces/:spaceId`
+
+`VIEWER` (or anyone, for a `PUBLIC` Space). **200** with the Space.
+
+### `PATCH /api/spaces/:spaceId`
+
+`OWNER`. Body with any of `name`, `description`, `color`, `visibility` and `metadata`; the mode never changes and `metadata` is validated against it. Errors: `400 VALIDATION_ERROR`, `400 COLOR_NOT_IN_PALETTE`, `409 SPACE_HAS_MEMBERS` (a Space only becomes `PRIVATE` when its members are all OWNERs).
+
+### `POST /api/spaces/:spaceId/archive` and `POST /api/spaces/:spaceId/unarchive`
+
+`OWNER`. Archives or restores the Space (idempotent). An archived Space accepts no new snaps, invites or members. **200** with the Space.

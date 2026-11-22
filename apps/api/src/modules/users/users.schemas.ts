@@ -7,6 +7,7 @@ import {
 import { z } from 'zod';
 import type { Config } from '../../config/env';
 import { createPaginationQuerySchema } from '../../lib/pagination';
+import { booleanQueryParam } from '../../lib/query-params';
 import type { RequestSchemas } from '../../middlewares/validate';
 
 /** A username in a URL. Unknown or malformed usernames simply do not exist (404). */
@@ -15,9 +16,6 @@ export const usernameParamsSchema = z.object({
 });
 
 const optionalText = z.string().trim().min(1).optional();
-const booleanQuery = z
-  .enum(['true', 'false'], { error: 'expected true or false' })
-  .transform((value) => value === 'true');
 
 /** Request schemas of the users routes (the page size limits come from the config). */
 export function createUsersInputs(pagination: Config['pagination']) {
@@ -32,7 +30,7 @@ export function createUsersInputs(pagination: Config['pagination']) {
       query: pageQuery.extend({
         q: optionalText,
         role: userRoleSchema.optional(),
-        isActive: booleanQuery.optional(),
+        isActive: booleanQueryParam.optional(),
       }),
     },
     adminStatus: { params: userIdParams, body: adminUserStatusBodySchema },

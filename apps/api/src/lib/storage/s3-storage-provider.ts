@@ -33,7 +33,9 @@ export function createS3StorageProvider(options: S3StorageOptions): StorageProvi
 
   return {
     async put(key, body, contentType) {
-      await client.send(new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType }));
+      await client.send(
+        new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType }),
+      );
     },
 
     getSignedUrl(key) {

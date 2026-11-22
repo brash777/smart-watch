@@ -83,9 +83,10 @@ spaceInvitesRouter.post(
 
 - `authenticate`: 401 without a valid session.
 - `requireRole(...roles)`: 403 when the user's global role is not in the list.
-- `requireSpaceRole(minRole)`: loads the Space and the caller's membership and attaches them to the request (for example as `req.spaceAccess`).
-  - **404** when the Space does not exist, the `spaceId` is malformed or the caller cannot see the Space. Never reveal that a private Space exists.
-  - **403** when the caller can see the Space but their role is below `minRole`.
+- `requireSpaceRole(minRole)`: loads the Space and the caller's membership and attaches them to the request as `req.spaceAccess` (read it with `requireSpaceAccess(req)`). Put `optionalAuth` before it on read routes of `PUBLIC` Spaces, `authenticate` everywhere else.
+  - **404** `SPACE_NOT_FOUND` when the Space does not exist or the `spaceId` is malformed.
+  - **401** `UNAUTHENTICATED` without a session when the Space is not `PUBLIC`.
+  - **403** `FORBIDDEN` when the caller is not a member of a non-`PUBLIC` Space, or their role is below `minRole`.
   - In a `PUBLIC` Space, non-members get read-only (`VIEWER`) access.
 - `validate(schema)`: parses `params`, `query` and `body`. Invalid input gets a 400 whose `error.details` lists the issues. Controllers and services only use validated values.
 
@@ -107,13 +108,13 @@ Use cursor pagination:
 
 Use Supertest against the Express app: no real network and no real AI (`MockAiProvider`). Every endpoint covers at least:
 
-| Case                                                     | Expected                                  |
-| -------------------------------------------------------- | ----------------------------------------- |
-| Happy path                                               | 200 or 201 and the `{ data, meta }` shape |
-| Invalid input                                            | 400 with `error.code` and `error.details` |
-| No session                                               | 401                                       |
-| Not allowed (role too low, not the author, not an ADMIN) | 403                                       |
-| Not found (missing id, or a Space the caller cannot see) | 404                                       |
+| Case                                                                   | Expected                                  |
+| ---------------------------------------------------------------------- | ----------------------------------------- |
+| Happy path                                                             | 200 or 201 and the `{ data, meta }` shape |
+| Invalid input                                                          | 400 with `error.code` and `error.details` |
+| No session                                                             | 401                                       |
+| Not allowed (not a member, role too low, not the author, not an ADMIN) | 403                                       |
+| Not found (missing or malformed id)                                    | 404                                       |
 
 ```ts
 describe('POST /spaces/:spaceId/invites', () => {

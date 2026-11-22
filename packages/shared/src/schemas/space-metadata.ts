@@ -24,19 +24,19 @@ export const contentSpaceMetadataSchema = z.strictObject({
 
 /**
  * A Space mode together with its metadata. The shape of the metadata depends on the mode,
- * and fields of another mode are rejected.
+ * and fields of another mode are rejected. Every field is optional, so it defaults to {}.
  */
 export const spaceMetadataByModeSchema = z.discriminatedUnion('mode', [
   z.object({
     mode: z.literal(spaceModeSchema.enum.STUDY),
-    metadata: studySpaceMetadataSchema,
+    metadata: studySpaceMetadataSchema.default({}),
   }),
   z.object({
     mode: z.literal(spaceModeSchema.enum.WORK),
-    metadata: workSpaceMetadataSchema,
+    metadata: workSpaceMetadataSchema.default({}),
   }),
   z.object({
     mode: z.literal(spaceModeSchema.enum.CONTENT),
-    metadata: contentSpaceMetadataSchema,
+    metadata: contentSpaceMetadataSchema.default({}),
   }),
 ]);

@@ -34,14 +34,14 @@ apps/api/src/modules/ai/
 │   └── mock-ai-provider.ts
 ├── prompts/                    # versioned prompt templates
 ├── fixtures/                   # MockAiProvider outputs, one per task variant
-├── tasks/                      # one file per task: analyze-snap.ts, compose-document.ts, …
+├── tasks/                      # one file per task: snap-analysis.ts, compose-document.ts, …
 └── ai-run.repository.ts        # AiRun persistence
 ```
 
 ## 2. Prompts
 
 - Path: `apps/api/src/modules/ai/prompts/<task>[.<mode or type>].v<N>.md`, all in kebab-case. For example:
-  - `analyze-snap.study.v1.md`, `analyze-snap.work.v1.md`, `analyze-snap.content.v1.md`
+  - `snap-analysis.study.v1.md`, `snap-analysis.work.v1.md`, `snap-analysis.content.v1.md`
   - `compose-document.study-notes.v1.md`, `compose-document.assignment-guide.v1.md`, `compose-document.work-daily-report.v1.md`
   - `generate-flashcards.v1.md`, `generate-quiz.v1.md`, `ask-space.v1.md`
 - Placeholders look `{{like_this}}` (snake_case). The loader fails when a placeholder gets no value, so a prompt never goes out with blanks.
@@ -59,7 +59,7 @@ apps/api/src/modules/ai/
    1. Check `stop_reason`. `refusal`: record it in the AiRun and fail with a clear error, without retrying the same input. `max_tokens`: the output is incomplete, so record it and fail (raise the configured max tokens if it happens often).
    2. Find the `tool_use` block by its `type`. The content can also hold `thinking` and `text` blocks, so never assume `content[0]`.
    3. Validate its `input` with the Zod output schema.
-4. **Retry once.** If there is no tool call or validation fails, send one more request: the same messages, then the assistant turn exactly as received (thinking blocks included), then a `tool_result` for that tool call with `is_error: true` and a readable summary of the Zod issues. If there was no tool call at all, add a user message asking for the tool call instead. If the second answer is still invalid, throw an `AppError` such as `AI_INVALID_OUTPUT`. Both calls are AiRuns.
+4. **Retry once.** If there is no tool call or validation fails, send one more request: the same messages, then the assistant turn exactly as received (thinking blocks included), then a `tool_result` for that tool call with `is_error: true` and a readable summary of the Zod issues. If there was no tool call at all, add a user message asking for the tool call instead. The correction texts are prompts too (`retry-invalid-output`, `retry-missing-tool-call`). If the second answer is still invalid, throw an `AppError` such as `AI_INVALID_OUTPUT`. Both calls are AiRuns. All of this already lives in `ai-runner.ts`: a task only calls `runner.run()`.
 5. Long texts (notes, summaries, reports, guides) are **Markdown inside a JSON field** (e.g. `markdown`). They cite snaps as `[Snap N]`, where `N` is the 1-based position of the snap in the list sent to the model. The task maps each `N` back to the snap id and stores the sources.
 
 ## 4. Configuration
@@ -99,7 +99,7 @@ Write the AiRun in a step that also runs when the call throws, so failures are n
 
 ## 7. MockAiProvider, fixtures and tests
 
-- `MockAiProvider` returns fixtures from `apps/api/src/modules/ai/fixtures/` (one per task variant, e.g. `analyze-snap.study.json`) with plausible fake token usage. It never calls the network.
+- `MockAiProvider` returns fixtures from `apps/api/src/modules/ai/fixtures/` (one per task variant, named after its prompt, e.g. `snap-analysis.study.json`) with plausible fake token usage. It never calls the network.
 - It records every request it receives so tests can assert on them, and it can be told to return an invalid output, no tool call or a refusal to exercise the error paths.
 - Tests and local development use `AI_PROVIDER=mock`. Tests never call the real API.
 - Every new task comes with:

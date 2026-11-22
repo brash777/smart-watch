@@ -121,5 +121,11 @@
     "valueType": "NUMBER",
     "value": 20,
     "description": "USD per million output tokens of AI_MODEL (claude-opus-5-5: 20). Used to estimate AiRun costs."
+  },
+  {
+    "key": "ai_fast_mode_price_multiplier",
+    "valueType": "NUMBER",
+    "value": 2,
+    "description": "How many times the token prices of AI_MODEL a fast mode call costs (claude-opus-5-5: 2). Used to estimate the cost of AiRuns with speed fast."
   }
 ]

@@ -1,11 +1,5 @@
 import { z } from 'zod';
 
-/*
- * Environment schema of the API. Every variable is required unless marked optional.
- * Values come from the real environment or from the root .env file (documented in
- * .env.example). parseEnv() reports every missing or invalid variable by name.
- */
-
 const SECONDS_PER_UNIT = { s: 1, m: 60, h: 3_600, d: 86_400 } as const;
 const BYTES_PER_MEGABYTE = 1024 * 1024;
 
@@ -52,6 +46,9 @@ const durationInSeconds = z
     const unit = value.slice(-1) as keyof typeof SECONDS_PER_UNIT;
     return Number(value.slice(0, -1)) * SECONDS_PER_UNIT[unit];
   });
+
+/** How much reasoning the model may spend on an answer (Claude's output_config.effort). */
+const aiEffort = z.enum(['low', 'medium', 'high', 'xhigh', 'max']);
 
 /** HS256 needs a key of at least 256 bits: this is a cryptographic floor, not a tunable. */
 const jwtSecret = z.string().min(32, 'must be at least 32 characters long');
@@ -109,10 +106,13 @@ const envShape = {
   ANTHROPIC_API_KEY: nonEmptyString.optional(),
   AI_MODEL: nonEmptyString,
   AI_MAX_TOKENS: positiveInt,
-  AI_EFFORT: z.enum(['low', 'medium', 'high', 'xhigh', 'max']),
+  AI_EFFORT: aiEffort,
   AI_TIMEOUT_MS: positiveInt,
   AI_MAX_RETRIES: nonNegativeInt,
   AI_IMAGE_MAX_SIDE_PX: positiveInt,
+  AI_IMAGE_FORMAT: z.enum(['jpeg', 'webp']),
+  // 1 and 100 are the limits of the JPEG and WebP quality scale itself.
+  AI_IMAGE_QUALITY: z.coerce.number().int().min(1).max(100),
   AI_QUEUE_CONCURRENCY: positiveInt,
   AI_CONTEXT_MAX_CHARS: positiveInt,
 
@@ -212,7 +212,12 @@ function toConfig(env: Env) {
       effort: env.AI_EFFORT,
       timeoutMs: env.AI_TIMEOUT_MS,
       maxRetries: env.AI_MAX_RETRIES,
-      imageMaxSidePx: env.AI_IMAGE_MAX_SIDE_PX,
+      /** How photos are resized and encoded before they are sent to the AI. */
+      image: {
+        maxSidePx: env.AI_IMAGE_MAX_SIDE_PX,
+        format: env.AI_IMAGE_FORMAT,
+        quality: env.AI_IMAGE_QUALITY,
+      },
       queueConcurrency: env.AI_QUEUE_CONCURRENCY,
       contextMaxChars: env.AI_CONTEXT_MAX_CHARS,
     },

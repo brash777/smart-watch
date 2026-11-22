@@ -1,0 +1,18 @@
+{
+  "contentType": "WHITEBOARD",
+  "extractedText": "# Regla de la cadena\n\nSi $y = f(g(x))$, entonces:\n\n$$\\frac{dy}{dx} = f'(g(x)) \\cdot g'(x)$$\n\n## Ejemplo\n\n- $y = (3x^2 + 1)^5$\n- $y' = 5(3x^2 + 1)^4 \\cdot 6x$",
+  "summary": "Pizarra con la regla de la cadena para derivar funciones compuestas y un ejemplo resuelto.",
+  "topics": ["Regla de la cadena", "Derivada de funciones compuestas"],
+  "keyConcepts": [
+    {
+      "term": "Regla de la cadena",
+      "definition": "La derivada de f(g(x)) es f'(g(x)) multiplicada por g'(x)."
+    },
+    {
+      "term": "Función compuesta",
+      "definition": "Una función aplicada al resultado de otra, como f(g(x))."
+    }
+  ],
+  "warnings": ["La esquina inferior derecha de la pizarra tiene reflejo y no se lee completa."],
+  "suggestedTags": ["cálculo", "derivadas", "regla de la cadena"]
+}

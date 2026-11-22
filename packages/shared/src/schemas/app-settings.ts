@@ -14,6 +14,7 @@ export const settingValueSchema = z.union([
 
 const positiveInt = z.number().int().positive();
 const nonNegativeNumber = z.number().nonnegative();
+const positiveNumber = z.number().positive();
 const nonEmptyText = z.string().trim().min(1);
 const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'expected a hex color such as #1A2B3C');
 const hashtag = z
@@ -66,6 +67,8 @@ export const appSettingDefinitions = {
   ai_cost_per_million_input_tokens: { valueType: 'NUMBER', schema: nonNegativeNumber },
   /** USD per million output tokens of AI_MODEL, for AiRun cost estimates. */
   ai_cost_per_million_output_tokens: { valueType: 'NUMBER', schema: nonNegativeNumber },
+  /** How many times the token prices fast mode costs (AI speed "fast"), for AiRun cost estimates. */
+  ai_fast_mode_price_multiplier: { valueType: 'NUMBER', schema: positiveNumber },
 } as const satisfies Record<
   string,
   { valueType: z.infer<typeof settingValueTypeSchema>; schema: z.ZodType }

@@ -1,0 +1,23 @@
+{
+  "activity": "Instalación de un tablero eléctrico de distribución en el muro del cuarto técnico.",
+  "objectsDetected": [
+    "tablero eléctrico",
+    "interruptores automáticos",
+    "cableado",
+    "canaleta plástica"
+  ],
+  "progressNote": "El tablero está montado y cableado; faltan las tapas y la marcación de los circuitos.",
+  "issues": [
+    {
+      "description": "Un tramo de cable queda fuera de la canaleta, a la vista.",
+      "severity": "MEDIUM"
+    },
+    {
+      "description": "Los circuitos todavía no están marcados.",
+      "severity": "LOW"
+    }
+  ],
+  "safetyObservations": ["El tablero está abierto y no hay señalización de riesgo eléctrico."],
+  "summary": "Tablero eléctrico montado y cableado, pendiente de tapas, marcación de circuitos y orden del cableado.",
+  "suggestedTags": ["eléctrico", "tablero", "cuarto técnico"]
+}

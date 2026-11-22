@@ -14,3 +14,13 @@ export const visibilitySchema = z.enum(['PRIVATE', 'MEMBERS', 'PUBLIC']);
 
 /** Where the AI analysis of a snap is. New snaps start PENDING. */
 export const analysisStatusSchema = z.enum(['PENDING', 'PROCESSING', 'DONE', 'FAILED']);
+
+/** What an AiRun did (docs/PRODUCT.md, "Enumerated values"). */
+export const aiTaskSchema = z.enum([
+  'SNAP_ANALYSIS',
+  'COMPOSE_DOCUMENT',
+  'STUDY_FLASHCARDS',
+  'STUDY_QUIZ',
+  'ASK_SPACE',
+  'POST_DRAFT',
+]);

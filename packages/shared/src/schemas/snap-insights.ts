@@ -1,0 +1,91 @@
+import { z } from 'zod';
+import type { SpaceMode } from '../types/enums';
+import { tagsSchema } from './snaps';
+
+/*
+ * SnapInsight content: what the AI writes about one snap, by Space mode (docs/PRODUCT.md,
+ * "Space modes"). The AI answers with these shapes and the person can edit them afterwards,
+ * so the same rules apply to both. The prompts in apps/api/src/modules/ai/prompts explain
+ * every field to the model.
+ */
+
+/** A text written by the AI or by the person: trimmed and never empty. */
+const insightText = z.string().trim().min(1);
+const insightTextList = z.array(insightText);
+
+function unique<T>(values: T[]): T[] {
+  return [...new Set(values)];
+}
+
+/**
+ * A hashtag as Snapia stores it: lowercase, without the leading #, made of letters, digits
+ * and _ ("#Repostería" becomes "repostería").
+ */
+export const hashtagSchema = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/^#+/, '').toLowerCase())
+  .pipe(z.string().regex(/^[\p{Ll}\p{Nd}_]+$/u, 'expected letters, digits or _ without spaces'));
+
+/** What a STUDY snap shows. */
+export const studyContentTypeSchema = z.enum([
+  'WHITEBOARD',
+  'SLIDE',
+  'NOTEBOOK',
+  'BOOK_PAGE',
+  'HANDOUT',
+  'SCREEN',
+  'OTHER',
+]);
+
+/** How serious a problem seen in a WORK snap is. */
+export const issueSeveritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']);
+
+/** Fields of every SnapInsight, whatever the mode. */
+const insightBaseShape = {
+  /** One or two sentences about what the snap shows. */
+  summary: insightText,
+  /** Tags the author may add to the snap (normalized like snap tags). */
+  suggestedTags: tagsSchema,
+};
+
+/** STUDY: the text read in the photo, its topics and its key concepts. */
+export const studySnapInsightSchema = z.object({
+  ...insightBaseShape,
+  contentType: studyContentTypeSchema,
+  /** Every readable text of the photo as Markdown, in its original language; empty when none. */
+  extractedText: z.string().trim(),
+  topics: insightTextList,
+  keyConcepts: z.array(z.object({ term: insightText, definition: insightText })),
+  /** What limits the use of the snap: illegible or cut-off parts, glare, blur… */
+  warnings: insightTextList,
+});
+
+/** WORK: a factual description of the work shown, its state and its visible issues. */
+export const workSnapInsightSchema = z.object({
+  ...insightBaseShape,
+  activity: insightText,
+  objectsDetected: insightTextList,
+  progressNote: insightText,
+  issues: z.array(z.object({ description: insightText, severity: issueSeveritySchema })),
+  safetyObservations: insightTextList,
+});
+
+/** CONTENT: photo quality feedback plus a caption, hashtags and alt text ready to publish. */
+export const contentSnapInsightSchema = z.object({
+  ...insightBaseShape,
+  description: insightText,
+  /** A score from 0 (unusable) to 100 (ready to publish): the scale is part of the contract. */
+  qualityScore: z.number().int().min(0).max(100),
+  qualityTips: insightTextList,
+  suggestedCaption: insightText,
+  hashtags: z.array(hashtagSchema).transform(unique),
+  altText: insightText,
+});
+
+/** The SnapInsight content schema of each Space mode. */
+export const snapInsightDataSchemas = {
+  STUDY: studySnapInsightSchema,
+  WORK: workSnapInsightSchema,
+  CONTENT: contentSnapInsightSchema,
+} as const satisfies Record<SpaceMode, z.ZodType>;

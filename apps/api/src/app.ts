@@ -16,6 +16,12 @@ import { createRateLimiter } from './middlewares/rate-limit';
 import { createRequireSpaceRole } from './middlewares/require-space-role';
 import { requestId } from './middlewares/request-id';
 import { createImageUpload } from './middlewares/upload';
+import { createAiQueue, type AiQueue } from './modules/ai/ai-queue';
+import type { AiProvider } from './modules/ai/ai-provider';
+import { createAiRunner } from './modules/ai/ai-runner';
+import { createAiRunsRepository } from './modules/ai/ai-runs.repository';
+import { createPromptLoader } from './modules/ai/prompt-loader';
+import { createSnapAnalysisTask } from './modules/ai/tasks/snap-analysis';
 import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
@@ -23,6 +29,13 @@ import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
 import { createSettingsRepository } from './modules/settings/settings.repository';
 import { createSettingsService } from './modules/settings/settings.service';
+import { createSnapInsightsRepository } from './modules/snap-insights/snap-insights.repository';
+import {
+  createSnapInsightsRouter,
+  createSpaceAnalysisRouter,
+} from './modules/snap-insights/snap-insights.routes';
+import { createSnapInsightsService } from './modules/snap-insights/snap-insights.service';
+import { createSnapPermissions } from './modules/snaps/snap-permissions';
 import { createSnapsRepository } from './modules/snaps/snaps.repository';
 import { createSnapsRouter, createSpaceSnapsRouter } from './modules/snaps/snaps.routes';
 import { createSnapsService } from './modules/snaps/snaps.service';
@@ -41,10 +54,25 @@ export interface AppDependencies {
   storage: StorageProvider;
   /** In-process events, such as snap.created. */
   events: EventBus;
+  /** The AI provider (AI_PROVIDER). */
+  aiProvider: AiProvider;
+}
+
+export interface Application {
+  app: Express;
+  /** Background AI work. It starts paused: server.ts starts it once the API listens. */
+  aiQueue: AiQueue;
 }
 
 /** Builds the Express application without listening, so tests can use it directly. */
-export function createApp({ config, logger, prisma, storage, events }: AppDependencies): Express {
+export function createApp({
+  config,
+  logger,
+  prisma,
+  storage,
+  events,
+  aiProvider,
+}: AppDependencies): Application {
   const app = express();
   app.disable('x-powered-by');
 
@@ -90,10 +118,48 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
   // Every user in a response carries a signed URL of their profile photo.
   const avatarUrl = createAvatarUrlResolver(storage);
   const usersDependencies = { config, prisma, logger, storage, images, avatarUrl, authenticate };
+
+  // Every new snap is analyzed in the background; the upload never waits for the AI.
+  const prompts = createPromptLoader();
+  const snapInsightsRepository = createSnapInsightsRepository(prisma);
+  const aiQueue = createAiQueue({
+    concurrency: config.ai.queueConcurrency,
+    store: snapInsightsRepository,
+    snapAnalysis: createSnapAnalysisTask({
+      runner: createAiRunner({
+        provider: aiProvider,
+        runs: createAiRunsRepository(prisma),
+        settings,
+        prompts,
+        logger,
+      }),
+      prompts,
+      settings,
+      storage,
+      config: config.ai,
+    }),
+    logger,
+  });
+  events.on('snap.created', ({ snapId }) => {
+    aiQueue.enqueueSnapAnalysis(snapId);
+  });
+
+  const snapsRepository = createSnapsRepository(prisma);
+  const snapInsightsRouterDependencies = {
+    service: createSnapInsightsService({
+      repository: snapInsightsRepository,
+      permissions: createSnapPermissions({ snaps: snapsRepository, spaces: spacesRepository }),
+      settings,
+      queue: aiQueue,
+    }),
+    authenticate,
+    optionalAuth,
+    requireSpaceRole,
+  };
   const snapsRouterDependencies = {
     config,
     service: createSnapsService({
-      repository: createSnapsRepository(prisma),
+      repository: snapsRepository,
       spaces: spacesRepository,
       storage,
       images,
@@ -150,11 +216,13 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
     }),
   );
   api.use('/spaces', createSpaceSnapsRouter(snapsRouterDependencies));
+  api.use('/spaces', createSpaceAnalysisRouter(snapInsightsRouterDependencies));
   api.use('/snaps', createSnapsRouter(snapsRouterDependencies));
+  api.use('/snaps', createSnapInsightsRouter(snapInsightsRouterDependencies));
   app.use('/api', api);
 
   app.use(notFound);
   app.use(createErrorHandler({ isProduction: config.isProduction }));
 
-  return app;
+  return { app, aiQueue };
 }

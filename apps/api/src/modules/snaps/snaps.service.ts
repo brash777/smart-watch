@@ -1,18 +1,15 @@
-import type { Snap, SnapDetail, SpaceRole, UpdateSnapBody } from '@snapia/shared';
+import type { Snap, SnapDetail, UpdateSnapBody } from '@snapia/shared';
 import type { Logger } from 'pino';
 import { AppError } from '../../lib/app-error';
 import type { EventBus } from '../../lib/events';
 import { PROCESSED_IMAGE_MIME_TYPE, type ImageProcessor } from '../../lib/images/image-processor';
 import { mapPage, toPage, type Page } from '../../lib/pagination';
 import { deleteStoredObjects, type StorageProvider } from '../../lib/storage';
-import {
-  effectiveSpaceRole,
-  hasSpaceRole,
-  type SpaceAccess,
-} from '../../middlewares/require-space-role';
+import type { SpaceAccess } from '../../middlewares/require-space-role';
 import type { SettingsService } from '../settings/settings.service';
 import type { SpacesRepository } from '../spaces/spaces.repository';
 import type { AvatarUrlResolver } from '../users/avatars';
+import { createSnapPermissions } from './snap-permissions';
 import { newSnapStorageKeys } from './snap-storage-keys';
 import { toSnap, toSnapDetail } from './snaps.mappers';
 import type { NewSnap, SnapFilters, SnapRecord, SnapsRepository } from './snaps.repository';
@@ -44,32 +41,10 @@ export function createSnapsService(deps: SnapsServiceDependencies) {
     return toSnap(snap, storage, avatarUrl);
   }
 
-  /** The snap and the caller's role in its Space, checked like requireSpaceRole('VIEWER'). */
-  async function findSnapForUser(snapId: string, userId: string | undefined) {
-    const snap = await repository.findById(snapId);
-    if (snap === null) throw new AppError('SNAP_NOT_FOUND', 'Snap not found', 404);
-    const access = await deps.spaces.findAccess(snap.spaceId, userId);
-    const role = access === null ? null : effectiveSpaceRole(access.visibility, access.memberRole);
-    if (role === null && userId === undefined) {
-      throw new AppError('UNAUTHENTICATED', 'Sign in to continue', 401);
-    }
-    if (role === null) throw new AppError('FORBIDDEN', 'You are not a member of this Space', 403);
-    return { snap, memberRole: access?.memberRole ?? null };
-  }
-
-  /** Only the author (while EDITOR or OWNER) or an OWNER of the Space changes or deletes a snap. */
-  function assertCanModify(snap: SnapRecord, userId: string, memberRole: SpaceRole | null): void {
-    const isOwner = memberRole === 'OWNER';
-    const isActiveAuthor =
-      snap.authorId === userId && memberRole !== null && hasSpaceRole(memberRole, 'EDITOR');
-    if (!isOwner && !isActiveAuthor) {
-      throw new AppError(
-        'FORBIDDEN',
-        'Only the author or an OWNER of the Space can change this snap',
-        403,
-      );
-    }
-  }
+  const { findSnapForUser, assertCanModify } = createSnapPermissions({
+    snaps: repository,
+    spaces: deps.spaces,
+  });
 
   return {
     /**

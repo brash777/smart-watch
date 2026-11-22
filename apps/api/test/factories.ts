@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { parseAppSettingsSeed, readSeedFile, seedSettingValue } from '../prisma/seed-files';
 import { hashPassword } from '../src/lib/password';
 import type { PrismaClient } from '../src/lib/prisma';
-import { createTestApp, type TestAppOptions } from './test-app';
+import { createTestApp, type TestApp, type TestAppOptions } from './test-app';
 import { getTestPrisma } from './test-database';
 
 /** Low bcrypt cost so tests stay fast (the cost is stored in each hash, so login still works). */
@@ -28,10 +28,18 @@ export function createDatabaseTestApp(
   overrides: Record<string, string | undefined> = {},
   options: Omit<TestAppOptions, 'prisma'> = {},
 ): Express {
+  return createDatabaseTestContext(overrides, options).app;
+}
+
+/** Like createDatabaseTestApp, plus the config and the (paused) AI queue of the app. */
+export function createDatabaseTestContext(
+  overrides: Record<string, string | undefined> = {},
+  options: Omit<TestAppOptions, 'prisma'> = {},
+): TestApp {
   return createTestApp(
     { BCRYPT_ROUNDS: String(TEST_BCRYPT_ROUNDS), ...overrides },
     { ...options, prisma: getTestPrisma() },
-  ).app;
+  );
 }
 
 export interface TestUserOptions {
@@ -108,6 +116,8 @@ export interface TestSpaceOptions {
   visibility?: Visibility;
   color?: string;
   archived?: boolean;
+  /** Mode-specific fields (subject, project, niche…). */
+  metadata?: Record<string, string>;
 }
 
 /** Inserts a Space owned by ownerId, with its OWNER membership. */
@@ -124,7 +134,7 @@ export async function createSpace(
       mode: options.mode ?? 'STUDY',
       visibility: options.visibility ?? 'PRIVATE',
       color: options.color ?? paletteColor(),
-      metadata: {},
+      metadata: options.metadata ?? {},
       archivedAt: options.archived === true ? new Date() : null,
       members: { create: { userId: ownerId, role: 'OWNER' } },
     },

@@ -367,3 +367,65 @@ The author (while `EDITOR` or `OWNER` of the Space) or an `OWNER`. Body with `no
 ### `DELETE /api/snaps/:id`
 
 Same permission as `PATCH`. Deletes the snap and its files from storage. **204**.
+
+## Snap analysis (AI)
+
+Every new snap is analyzed in the background, so the upload never waits for the AI. Its `analysisStatus` goes from `PENDING` to `PROCESSING`, then to `DONE` (it has a **SnapInsight**) or `FAILED`. A queue in the API analyzes `AI_QUEUE_CONCURRENCY` snaps at a time; when the API starts, it queues again the snaps left `PENDING` or `PROCESSING`.
+
+What the AI gets: the photo, scaled down to `AI_IMAGE_MAX_SIDE_PX` (`AI_IMAGE_FORMAT`, `AI_IMAGE_QUALITY`), plus the prompt of the Space mode (`prompts/snap-analysis.<mode>.v<N>.md`) with the output language (`ai_output_language` setting), the Space metadata that helps to read the photo (STUDY `subject` and `semester`, WORK `project` and `siteLabel`, CONTENT `niche`; never `professor` or `client`), the date taken, the tags and the note. Emails and phone numbers are removed from every text, and no user data (names, usernames, emails) is sent. The analysis uses `AI_SNAP_ANALYSIS_EFFORT` and `AI_SNAP_ANALYSIS_SPEED`. Every call to the AI is an AiRun (tokens, estimated cost, latency, error); an invalid answer is retried once.
+
+A **SnapInsight** in responses. `data` depends on `mode`, and every mode has `summary` and `suggestedTags`:
+
+```json
+{
+  "id": "0196…",
+  "snapId": "0196…",
+  "mode": "STUDY",
+  "data": {
+    "summary": "Pizarra con la regla de la cadena y un ejemplo resuelto.",
+    "suggestedTags": ["cálculo", "derivadas"],
+    "contentType": "WHITEBOARD",
+    "extractedText": "# Regla de la cadena\n\n$$\\frac{dy}{dx} = f'(g(x)) \\cdot g'(x)$$",
+    "topics": ["Regla de la cadena"],
+    "keyConcepts": [{ "term": "Función compuesta", "definition": "Una función aplicada a otra." }],
+    "warnings": []
+  },
+  "promptVersion": "snap-analysis.study.v1",
+  "editedByUser": false,
+  "createdAt": "2026-11-22T13:00:00.000Z",
+  "updatedAt": "2026-11-22T13:00:00.000Z"
+}
+```
+
+| Mode      | Fields of `data` besides `summary` and `suggestedTags`                                                                                                                                             |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STUDY`   | `contentType` (`WHITEBOARD`, `SLIDE`, `NOTEBOOK`, `BOOK_PAGE`, `HANDOUT`, `SCREEN`, `OTHER`), `extractedText` (Markdown, may be empty), `topics`, `keyConcepts` (`term`, `definition`), `warnings` |
+| `WORK`    | `activity`, `objectsDetected`, `progressNote`, `issues` (`description`, `severity`: `LOW`, `MEDIUM`, `HIGH`), `safetyObservations`                                                                 |
+| `CONTENT` | `description`, `qualityScore` (whole number from 0 to 100), `qualityTips`, `suggestedCaption`, `hashtags` (lowercase, without `#`), `altText`                                                      |
+
+### `GET /api/snaps/:id/insight`
+
+Anyone who can see the snap. **200** with the SnapInsight. Errors: `404 INSIGHT_NOT_FOUND` while the snap has none (`details.analysisStatus` says whether to wait or to retry), `404 SNAP_NOT_FOUND`, `401`, `403`.
+
+### `PATCH /api/snaps/:id/insight`
+
+The author (while `EDITOR` or `OWNER`) or an `OWNER`, like `PATCH /api/snaps/:id`. The body has some fields of the insight's mode, with the same rules as the AI output; the others keep their value. **200** with the SnapInsight and `editedByUser: true`. Errors: `400 VALIDATION_ERROR` (unknown field, field of another mode or invalid value), `404 INSIGHT_NOT_FOUND`, `409 ANALYSIS_IN_PROGRESS` (the running analysis would overwrite the changes).
+
+### `POST /api/snaps/:id/reanalyze`
+
+Same permission as `PATCH`. Analyzes a `DONE` or `FAILED` snap again; its AiRuns are recorded for whoever asked. The current insight stays until the new one replaces it, so a failed retry loses nothing (and replaces the person's edits when it succeeds). **202** with `{ "snapId": "0196…", "analysisStatus": "PENDING" }`. Errors: `409 ANALYSIS_IN_PROGRESS` when the snap is `PENDING` or `PROCESSING`.
+
+### `GET /api/spaces/:spaceId/analysis-status`
+
+`VIEWER` (or anyone, for a `PUBLIC` Space). How the analysis of the Space's snaps is going, for the web app to poll every `pollIntervalMs` (`analysis_poll_interval_ms` setting) while some are `PENDING` or `PROCESSING`:
+
+```json
+{
+  "data": {
+    "spaceId": "0196…",
+    "total": 13,
+    "counts": { "PENDING": 1, "PROCESSING": 2, "DONE": 9, "FAILED": 1 },
+    "pollIntervalMs": 3000
+  }
+}
+```

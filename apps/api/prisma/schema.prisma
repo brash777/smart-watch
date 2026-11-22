@@ -360,6 +360,8 @@ model SnapInsight {
   extractedText String?   @map("extracted_text")
   /// Full AI result for the mode, validated with the output schemas of @snapia/shared.
   data          Json
+  /// Prompt file that produced the result, e.g. snap-analysis.study.v1.
+  promptVersion String    @map("prompt_version")
   aiRunId       String?   @map("ai_run_id") @db.Uuid
   /// True once the person edited the AI result.
   editedByUser  Boolean   @default(false) @map("edited_by_user")

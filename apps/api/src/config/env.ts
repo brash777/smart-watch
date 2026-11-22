@@ -107,6 +107,8 @@ const envShape = {
   AI_MODEL: nonEmptyString,
   AI_MAX_TOKENS: positiveInt,
   AI_EFFORT: aiEffort,
+  AI_SNAP_ANALYSIS_EFFORT: aiEffort,
+  AI_SNAP_ANALYSIS_SPEED: z.enum(['standard', 'fast']),
   AI_TIMEOUT_MS: positiveInt,
   AI_MAX_RETRIES: nonNegativeInt,
   AI_IMAGE_MAX_SIDE_PX: positiveInt,
@@ -220,6 +222,11 @@ function toConfig(env: Env) {
       },
       queueConcurrency: env.AI_QUEUE_CONCURRENCY,
       contextMaxChars: env.AI_CONTEXT_MAX_CHARS,
+      /** The quick analysis of every new snap, which runs in the background. */
+      snapAnalysis: {
+        effort: env.AI_SNAP_ANALYSIS_EFFORT,
+        speed: env.AI_SNAP_ANALYSIS_SPEED,
+      },
     },
     rateLimit: {
       windowMs: env.RATE_LIMIT_WINDOW_MS,

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { SpaceMode } from '../types/enums';
+import { analysisStatusSchema, spaceModeSchema } from './enums';
 import { tagsSchema } from './snaps';
 
 /*
@@ -89,3 +90,67 @@ export const snapInsightDataSchemas = {
   WORK: workSnapInsightSchema,
   CONTENT: contentSnapInsightSchema,
 } as const satisfies Record<SpaceMode, z.ZodType>;
+
+/** Fields of every SnapInsight the API returns, whatever the mode. */
+const snapInsightResponseShape = {
+  id: z.uuid(),
+  snapId: z.uuid(),
+  /** Prompt file that produced the AI result, e.g. snap-analysis.study.v1. */
+  promptVersion: z.string(),
+  /** True once the person edited the AI result. */
+  editedByUser: z.boolean(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+};
+
+/** GET /api/snaps/:id/insight: `data` has the shape of the insight's mode. */
+export const snapInsightSchema = z.discriminatedUnion('mode', [
+  z.object({
+    ...snapInsightResponseShape,
+    mode: z.literal(spaceModeSchema.enum.STUDY),
+    data: studySnapInsightSchema,
+  }),
+  z.object({
+    ...snapInsightResponseShape,
+    mode: z.literal(spaceModeSchema.enum.WORK),
+    data: workSnapInsightSchema,
+  }),
+  z.object({
+    ...snapInsightResponseShape,
+    mode: z.literal(spaceModeSchema.enum.CONTENT),
+    data: contentSnapInsightSchema,
+  }),
+]);
+
+/** Some fields of a mode; the ones left out keep their value. Unknown fields are rejected. */
+function editableFields<Shape extends z.ZodRawShape>(schema: z.ZodObject<Shape>) {
+  return z
+    .strictObject(schema.shape)
+    .partial()
+    .refine((body) => Object.keys(body).length > 0, 'send at least one field to change');
+}
+
+/** PATCH /api/snaps/:id/insight: the body is checked against the mode of the insight. */
+export const updateSnapInsightBodySchemas = {
+  STUDY: editableFields(studySnapInsightSchema),
+  WORK: editableFields(workSnapInsightSchema),
+  CONTENT: editableFields(contentSnapInsightSchema),
+} as const satisfies Record<SpaceMode, z.ZodType>;
+
+const snapCount = z.number().int().nonnegative();
+
+/** GET /api/spaces/:spaceId/analysis-status: how the analysis of the Space's snaps is going. */
+export const spaceAnalysisStatusSchema = z.object({
+  spaceId: z.uuid(),
+  total: snapCount,
+  /** Snaps of the Space in each analysis status. */
+  counts: z.record(analysisStatusSchema, snapCount),
+  /** How often to ask again while snaps are PENDING or PROCESSING (analysis_poll_interval_ms). */
+  pollIntervalMs: z.number().int().positive(),
+});
+
+/** POST /api/snaps/:id/reanalyze */
+export const snapAnalysisStateSchema = z.object({
+  snapId: z.uuid(),
+  analysisStatus: analysisStatusSchema,
+});

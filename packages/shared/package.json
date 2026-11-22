@@ -4,6 +4,7 @@
   "private": true,
   "description": "Zod schemas and TypeScript types shared by the Snapia API and web app",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./src/index.ts",

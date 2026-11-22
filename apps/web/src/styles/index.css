@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+/* Layout sizes shared by the screens (the theme tokens add colors, type and radii). */
+@theme {
+  --spacing-nav: 4rem;
+}
+
+/* Keeps content clear of the bottom navigation and of the phone's home indicator. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pb-safe-nav {
+  padding-bottom: calc(var(--spacing-nav) + env(safe-area-inset-bottom) + var(--spacing) * 4);
+}

@@ -1,0 +1,93 @@
+{
+  "app": {
+    "tagline": "Toma la foto. La IA hace el resto.",
+    "loading": "Cargando…"
+  },
+  "nav": {
+    "label": "Navegación principal",
+    "home": "Inicio",
+    "spaces": "Espacios",
+    "capture": "Tomar un snap",
+    "explore": "Explorar",
+    "profile": "Perfil"
+  },
+  "auth": {
+    "login": {
+      "title": "Inicia sesión",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "noAccount": "¿Todavía no tienes cuenta?",
+      "toRegister": "Crea una cuenta"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "submit": "Crear cuenta",
+      "submitting": "Creando tu cuenta…",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "toLogin": "Inicia sesión"
+    },
+    "fields": {
+      "identifier": {
+        "label": "Email o nombre de usuario",
+        "error": "Escribe tu email o tu nombre de usuario."
+      },
+      "password": {
+        "label": "Contraseña",
+        "error": "Escribe tu contraseña."
+      },
+      "name": {
+        "label": "Nombre",
+        "error": "Escribe tu nombre."
+      },
+      "username": {
+        "label": "Nombre de usuario",
+        "error": "Usa de 3 a 30 caracteres: letras minúsculas, números, puntos o guiones bajos."
+      },
+      "email": {
+        "label": "Email",
+        "error": "Escribe un email válido."
+      },
+      "newPassword": {
+        "label": "Contraseña",
+        "error": "Usa al menos 8 caracteres, con una letra y un número."
+      }
+    }
+  },
+  "home": {
+    "title": "Inicio",
+    "intro": "Aquí verás los posts y los Instantes de las personas que sigues."
+  },
+  "spaces": {
+    "title": "Espacios",
+    "intro": "Aquí verás tus Espacios de estudio, de trabajo y de contenido."
+  },
+  "capture": {
+    "title": "Nuevo snap",
+    "intro": "Aquí tomarás fotos y las guardarás en un Espacio."
+  },
+  "explore": {
+    "title": "Explorar",
+    "intro": "Aquí descubrirás posts públicos por hashtag."
+  },
+  "profile": {
+    "title": "Perfil",
+    "username": "@{{username}}",
+    "logout": "Cerrar sesión",
+    "loggingOut": "Cerrando sesión…"
+  },
+  "notFound": {
+    "title": "Esta página no existe",
+    "back": "Volver al inicio"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "El email, el nombre de usuario o la contraseña no son correctos.",
+    "ACCOUNT_DISABLED": "Esta cuenta está desactivada.",
+    "EMAIL_TAKEN": "Ya hay una cuenta con ese email.",
+    "USERNAME_TAKEN": "Ese nombre de usuario ya está en uso.",
+    "RATE_LIMITED": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
+    "VALIDATION_ERROR": "Revisa los datos y vuelve a intentarlo.",
+    "UNAUTHENTICATED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "NETWORK_ERROR": "No hay conexión con el servidor. Revisa tu internet y vuelve a intentarlo.",
+    "UNKNOWN_ERROR": "Algo salió mal. Vuelve a intentarlo."
+  }
+}

@@ -27,10 +27,10 @@ npm install            # installs every workspace and enables the git hooks
 npm run db:up          # starts PostgreSQL and MinIO and waits until they are healthy
 npm run db:migrate     # applies the database migrations
 npm run db:seed        # loads the settings, the first ADMIN and (optionally) demo data
-npm run dev            # runs the API in watch mode
+npm run dev            # runs the API and the web app in watch mode
 ```
 
-Then open `GET /api/health` on the API (`API_BASE_URL` in `.env`).
+Then open the web app at `WEB_BASE_URL` (http://localhost:5173 by default), or `GET /api/health` on the API (`API_BASE_URL`). The web app calls the API through the Vite proxy (`VITE_API_URL=/api`), so a phone on the same network works too: run `npm run dev:web -- --host` and open the Network URL that Vite prints.
 
 `npm install` runs `git config core.hooksPath .githooks`. The `commit-msg` hook keeps commit messages free of attribution lines.
 

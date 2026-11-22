@@ -479,3 +479,72 @@ The author (while `EDITOR` or `OWNER`) or an `OWNER`. Body with `title`, `conten
 ### `DELETE /api/documents/:id`
 
 Same permission as `PATCH`. **204**.
+
+## Study tools (STUDY Spaces)
+
+Flashcards and quizzes are generated, like Compose, from the insights of analyzed snaps (at most `max_snaps_per_compose`, numbered by the date taken); each card and question keeps the snap it comes from as `sourceSnapId`. They exist only in `STUDY` Spaces (`400 STUDY_SPACE_REQUIRED` elsewhere), and the snap errors are the ones of Compose (`TOO_MANY_SNAPS`, `SNAP_NOT_FOUND`, `SNAPS_NOT_ANALYZED`).
+
+### `POST /api/spaces/:spaceId/flashcards`
+
+`EDITOR` or `OWNER`. Body: `{ "snapIds": ["0196…"] }`. The AI writes `flashcards_default_count` cards (fewer when the snaps have little content). **201** with the FlashcardDeck: `id`, `spaceId`, `title`, `promptVersion` (`generate-flashcards.v1`), `cards` (`id`, `question`, `answer`, `order`, `sourceSnapId`) and `createdAt`.
+
+### `POST /api/spaces/:spaceId/quizzes`
+
+`EDITOR` or `OWNER`. Body: `{ "snapIds": ["0196…"] }`. The AI writes `quiz_default_questions` multiple-choice questions. **201** with the Quiz **without its answers**: `id`, `spaceId`, `title`, `promptVersion` (`generate-quiz.v1`), `questions` (`id`, `prompt`, `options`, `order`, `sourceSnapId`) and `createdAt`.
+
+### `POST /api/quizzes/:id/attempts`
+
+Anyone signed in who can see the quiz's Space. Body: `{ "answers": [1, 0, 2] }`, the index of the chosen option of every question, in order. The API scores the attempt (the client never sends a score) and stores it. **201**:
+
+```json
+{
+  "data": {
+    "id": "0196…",
+    "quizId": "0196…",
+    "score": 2,
+    "total": 3,
+    "results": [
+      {
+        "questionId": "0196…",
+        "chosenIndex": 1,
+        "correctIndex": 1,
+        "isCorrect": true,
+        "explanation": "…"
+      }
+    ],
+    "createdAt": "2026-11-22T14:00:00.000Z"
+  }
+}
+```
+
+Errors: `400 INVALID_ANSWERS` (`details.expected` when the number of answers is wrong, `details.question` when an answer is not one of the options), `404 QUIZ_NOT_FOUND`, `401`, `403`.
+
+## Ask your Space
+
+### `POST /api/spaces/:spaceId/ask`
+
+`EDITOR` or `OWNER`, in any mode. Body: `{ "question": "¿Qué es la regla de la cadena?" }`. There is no vector search: the analyzed snaps are ranked by the words their insight, note and tags share with the question (accents and case aside, and a word that few snaps have counts more), and the best ones go to the AI while they fit in `AI_CONTEXT_MAX_CHARS`, numbered `[Snap 1]`, `[Snap 2]`… The last `ask_history_max_messages` messages of the user's conversation in the Space go too, without their citations. The answer only uses the snaps, cites them and says when they do not have it (`found: false`). Both messages are stored as AskMessages. **201**:
+
+```json
+{
+  "data": {
+    "question": {
+      "id": "0196…",
+      "role": "USER",
+      "content": "¿Qué es la regla de la cadena?",
+      "citedSnapIds": [],
+      "createdAt": "…"
+    },
+    "answer": {
+      "id": "0196…",
+      "role": "ASSISTANT",
+      "content": "La regla de la cadena… [Snap 1].",
+      "citedSnapIds": ["0196…"],
+      "createdAt": "…"
+    },
+    "found": true
+  }
+}
+```
+
+`citedSnapIds` are the snaps the answer cites, in order. Errors: `409 NO_ANALYZED_SNAPS` (the Space has no analyzed snap yet) and the AI errors of Compose.

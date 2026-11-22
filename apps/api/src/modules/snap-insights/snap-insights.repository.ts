@@ -138,6 +138,15 @@ export function createSnapInsightsRepository(prisma: PrismaClient) {
       });
     },
 
+    /** Every analyzed snap of a Space with its insight, the first taken first. */
+    listAnalyzedSnaps(spaceId: string) {
+      return prisma.snap.findMany({
+        where: { spaceId, analysisStatus: 'DONE', insight: { isNot: null } },
+        orderBy: [{ takenAt: 'asc' }, { id: 'asc' }],
+        select: analyzedSnapSelect,
+      });
+    },
+
     /** How many snaps of the Space are in each analysis status. */
     async countByStatus(spaceId: string): Promise<Record<AnalysisStatus, number>> {
       const groups = await prisma.snap.groupBy({

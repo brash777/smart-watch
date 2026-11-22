@@ -21,8 +21,13 @@ import type { AiProvider } from './modules/ai/ai-provider';
 import { createAiRunner } from './modules/ai/ai-runner';
 import { createAiRunsRepository } from './modules/ai/ai-runs.repository';
 import { createPromptLoader } from './modules/ai/prompt-loader';
+import { createAskSpaceTask } from './modules/ai/tasks/ask-space';
 import { createComposeDocumentTask } from './modules/ai/tasks/compose-document';
 import { createSnapAnalysisTask } from './modules/ai/tasks/snap-analysis';
+import { createStudyMaterialTasks } from './modules/ai/tasks/study-material';
+import { createAskRepository } from './modules/ask/ask.repository';
+import { createAskRouter } from './modules/ask/ask.routes';
+import { createAskService } from './modules/ask/ask.service';
 import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
@@ -52,6 +57,9 @@ import { createSpaceMembersRouter } from './modules/space-members/space-members.
 import { createSpaceContentPermissions } from './modules/spaces/space-content-permissions';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
 import { createSpacesRouter } from './modules/spaces/spaces.routes';
+import { createStudyRepository } from './modules/study/study.repository';
+import { createQuizzesRouter, createSpaceStudyRouter } from './modules/study/study.routes';
+import { createStudyService } from './modules/study/study.service';
 import { createAvatarUrlResolver } from './modules/users/avatars';
 import { createAdminUsersRouter, createUsersRouter } from './modules/users/users.routes';
 
@@ -163,13 +171,16 @@ export function createApp({
     optionalAuth,
     requireSpaceRole,
   };
+  // Compose, study tools and Ask read the insights of analyzed snaps.
+  const snapSelection = createSnapSelection({ repository: snapInsightsRepository, settings });
+  const contentPermissions = createSpaceContentPermissions(spacesRepository);
   const documentsRouterDependencies = {
     config,
     service: createDocumentsService({
       repository: createDocumentsRepository(prisma),
-      snapSelection: createSnapSelection({ repository: snapInsightsRepository, settings }),
+      snapSelection,
       composer: createComposeDocumentTask(aiTaskDependencies),
-      permissions: createSpaceContentPermissions(spacesRepository),
+      permissions: contentPermissions,
       settings,
       avatarUrl,
     }),
@@ -177,6 +188,22 @@ export function createApp({
     optionalAuth,
     requireSpaceRole,
   };
+  const studyRouterDependencies = {
+    service: createStudyService({
+      repository: createStudyRepository(prisma),
+      snapSelection,
+      tasks: createStudyMaterialTasks(aiTaskDependencies),
+      permissions: contentPermissions,
+    }),
+    authenticate,
+    requireSpaceRole,
+  };
+  const askService = createAskService({
+    repository: createAskRepository(prisma),
+    snapInsights: snapInsightsRepository,
+    task: createAskSpaceTask(aiTaskDependencies),
+    settings,
+  });
   const snapsRouterDependencies = {
     config,
     service: createSnapsService({
@@ -242,6 +269,9 @@ export function createApp({
   api.use('/snaps', createSnapInsightsRouter(snapInsightsRouterDependencies));
   api.use('/spaces', createSpaceDocumentsRouter(documentsRouterDependencies));
   api.use('/documents', createDocumentsRouter(documentsRouterDependencies));
+  api.use('/spaces', createSpaceStudyRouter(studyRouterDependencies));
+  api.use('/quizzes', createQuizzesRouter(studyRouterDependencies));
+  api.use('/spaces', createAskRouter({ service: askService, authenticate, requireSpaceRole }));
   app.use('/api', api);
 
   app.use(notFound);

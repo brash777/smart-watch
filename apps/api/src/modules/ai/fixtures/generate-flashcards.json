@@ -1,0 +1,20 @@
+{
+  "title": "Regla de la cadena",
+  "cards": [
+    {
+      "question": "¿Qué dice la regla de la cadena?",
+      "answer": "La derivada de $f(g(x))$ es $f'(g(x)) \\cdot g'(x)$.",
+      "sourceSnap": 1
+    },
+    {
+      "question": "¿Qué es una función compuesta?",
+      "answer": "Una función aplicada al resultado de otra, como $f(g(x))$.",
+      "sourceSnap": 1
+    },
+    {
+      "question": "Deriva $y = (3x^2 + 1)^5$.",
+      "answer": "$y' = 5(3x^2 + 1)^4 \\cdot 6x$",
+      "sourceSnap": 1
+    }
+  ]
+}

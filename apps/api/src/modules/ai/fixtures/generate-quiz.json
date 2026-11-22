@@ -1,0 +1,41 @@
+{
+  "title": "Quiz: regla de la cadena",
+  "questions": [
+    {
+      "prompt": "¿Cuál es la derivada de $f(g(x))$?",
+      "options": [
+        "$f'(x) \\cdot g'(x)$",
+        "$f'(g(x)) \\cdot g'(x)$",
+        "$f(g'(x))$",
+        "$f'(g(x)) + g'(x)$"
+      ],
+      "correctIndex": 1,
+      "explanation": "La regla de la cadena multiplica la derivada de la función externa, evaluada en la interna, por la derivada de la interna.",
+      "sourceSnap": 1
+    },
+    {
+      "prompt": "¿Qué es una función compuesta?",
+      "options": [
+        "Una función aplicada al resultado de otra",
+        "La suma de dos funciones",
+        "Una función sin derivada",
+        "El producto de dos funciones"
+      ],
+      "correctIndex": 0,
+      "explanation": "En $f(g(x))$, la función $f$ se aplica al resultado de $g$.",
+      "sourceSnap": 1
+    },
+    {
+      "prompt": "Si $y = (3x^2 + 1)^5$, ¿cuánto vale $y'$?",
+      "options": [
+        "$5(3x^2 + 1)^4$",
+        "$6x$",
+        "$5(3x^2 + 1)^4 \\cdot 6x$",
+        "$(3x^2 + 1)^4 \\cdot 6x$"
+      ],
+      "correctIndex": 2,
+      "explanation": "Se deriva la potencia, $5(3x^2 + 1)^4$, y se multiplica por la derivada de la base, $6x$.",
+      "sourceSnap": 1
+    }
+  ]
+}

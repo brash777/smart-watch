@@ -89,6 +89,14 @@ describe('the prompt files of the AI module', () => {
     'space_metadata',
     'tool_name',
   ];
+  const studyMaterial = [
+    'count',
+    'output_language',
+    'snap_count',
+    'snaps',
+    'space_metadata',
+    'tool_name',
+  ];
   const promptFiles: [name: string, placeholders: string[]][] = [
     ['snap-analysis.study', snapAnalysis],
     ['snap-analysis.work', snapAnalysis],
@@ -100,6 +108,20 @@ describe('the prompt files of the AI module', () => {
     ['compose.work-progress-report', [...compose, 'period']],
     ['compose.content-post', [...compose, 'caption_tone', 'default_hashtags']],
     ['compose.content-carousel', [...compose, 'caption_tone', 'default_hashtags']],
+    ['generate-flashcards', studyMaterial],
+    ['generate-quiz', studyMaterial],
+    [
+      'ask-space',
+      [
+        'history',
+        'output_language',
+        'question',
+        'snap_count',
+        'snaps',
+        'space_metadata',
+        'tool_name',
+      ],
+    ],
     ['retry-invalid-output', ['issues', 'tool_name']],
     ['retry-missing-tool-call', ['tool_name']],
   ];

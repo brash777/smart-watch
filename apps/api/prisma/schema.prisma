@@ -427,6 +427,8 @@ model FlashcardDeck {
   spaceId          String   @map("space_id") @db.Uuid
   authorId         String   @map("author_id") @db.Uuid
   title            String
+  /// Prompt file that produced the deck, e.g. generate-flashcards.v1.
+  promptVersion    String   @map("prompt_version")
   sourceDocumentId String?  @map("source_document_id") @db.Uuid
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
@@ -461,12 +463,14 @@ model Flashcard {
 }
 
 model Quiz {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  spaceId   String   @map("space_id") @db.Uuid
-  authorId  String   @map("author_id") @db.Uuid
-  title     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid(7)) @db.Uuid
+  spaceId       String   @map("space_id") @db.Uuid
+  authorId      String   @map("author_id") @db.Uuid
+  title         String
+  /// Prompt file that produced the quiz, e.g. generate-quiz.v1.
+  promptVersion String   @map("prompt_version")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   space     Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -520,16 +524,18 @@ model QuizAttempt {
 
 /// A message of the "Ask your Space" chat. Each user has their own conversation per Space.
 model AskMessage {
-  id           String         @id @default(uuid(7)) @db.Uuid
-  spaceId      String         @map("space_id") @db.Uuid
+  id            String         @id @default(uuid(7)) @db.Uuid
+  spaceId       String         @map("space_id") @db.Uuid
   /// Owner of the conversation (for both USER and ASSISTANT messages).
-  userId       String         @map("user_id") @db.Uuid
-  role         AskMessageRole
-  content      String
-  citedSnapIds String[]       @default([]) @map("cited_snap_ids") @db.Uuid
-  aiRunId      String?        @map("ai_run_id") @db.Uuid
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
+  userId        String         @map("user_id") @db.Uuid
+  role          AskMessageRole
+  content       String
+  citedSnapIds  String[]       @default([]) @map("cited_snap_ids") @db.Uuid
+  /// Prompt file that produced an ASSISTANT answer, e.g. ask-space.v1.
+  promptVersion String?        @map("prompt_version")
+  aiRunId       String?        @map("ai_run_id") @db.Uuid
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
 
   space Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)

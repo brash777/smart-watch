@@ -1,9 +1,13 @@
 import {
+  askAnswerDraftSchema,
   documentDraftSchema,
   documentTypeSchema,
+  flashcardDeckDraftSchema,
+  quizDraftSchema,
   snapInsightDataSchemas,
   type SpaceMode,
 } from '@snapia/shared';
+import type { z } from 'zod';
 import { describe, expect, it } from 'vitest';
 import { AiProviderError, type AiRequest } from '../ai-provider';
 import { createMockAiProvider } from './mock-ai-provider';
@@ -48,6 +52,18 @@ describe('MockAiProvider', () => {
       expect(draft.contentMarkdown).not.toMatch(/\[Snap [^1]\]/);
     },
   );
+
+  it.each([
+    ['generate-flashcards', flashcardDeckDraftSchema],
+    ['generate-quiz', quizDraftSchema],
+    ['ask-space', askAnswerDraftSchema],
+  ] as [string, z.ZodType][])('answers %s with a valid fixture', async (promptName, schema) => {
+    const provider = createMockAiProvider({ model: 'test-model' });
+
+    const reply = await provider.startConversation(requestFor(promptName)).send();
+
+    expect(schema.safeParse(reply.toolCall?.input).success).toBe(true);
+  });
 
   it('reports plausible token usage: text plus width × height / 750 per image', async () => {
     const provider = createMockAiProvider({ model: 'test-model' });

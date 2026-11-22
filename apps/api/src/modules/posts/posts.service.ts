@@ -8,17 +8,17 @@ import {
   type TrendingHashtag,
 } from '@snapia/shared';
 import { AppError } from '../../lib/app-error';
-import { mapPage, toPage, type Page } from '../../lib/pagination';
-import type { StorageProvider } from '../../lib/storage';
+import { toPage, type Page } from '../../lib/pagination';
 import type { SnapInsightData } from '../ai/snap-context';
 import type { PostDraftTask } from '../ai/tasks/post-draft';
 import type { SettingsService } from '../settings/settings.service';
 import { toAnalyzedSnap } from '../snap-insights/snap-selection';
+import type { SnapImages } from '../snaps/snap-images';
 import type { SnapSharing } from '../social/snap-sharing';
 import type { SnapToShare } from '../social/snap-sharing.repository';
 import type { AvatarUrlResolver } from '../users/avatars';
 import { toPost } from './posts.mappers';
-import type { PostPage, PostsRepository } from './posts.repository';
+import type { PostPage, PostRecord, PostsRepository } from './posts.repository';
 
 const MS_PER_DAY = 86_400_000;
 
@@ -27,7 +27,8 @@ export interface PostsServiceDependencies {
   sharing: SnapSharing;
   draftTask: PostDraftTask;
   settings: SettingsService;
-  storage: StorageProvider;
+  /** Signs the photo URLs of the snaps the viewer can view (canViewSnap). */
+  snapImages: SnapImages;
   avatarUrl: AvatarUrlResolver;
 }
 
@@ -53,7 +54,7 @@ export function createPostsService({
   sharing,
   draftTask,
   settings,
-  storage,
+  snapImages,
   avatarUrl,
 }: PostsServiceDependencies) {
   /** The author's own snaps, at most max_snaps_per_post, in the given order. */
@@ -67,8 +68,20 @@ export function createPostsService({
     return sharing.snapsToShare(userId, snapIds);
   }
 
-  function present(posts: Page<Parameters<typeof toPost>[0]>): Promise<Page<Post>> {
-    return mapPage(posts, (post) => toPost(post, storage, avatarUrl));
+  /** The posts with the photo URLs the viewer may get, signed in one batch. */
+  async function present(viewerId: string | undefined, posts: PostRecord[]): Promise<Post[]> {
+    const urls = await snapImages.signedUrls(
+      viewerId,
+      posts.flatMap(({ media }) => media.map(({ snap }) => snap)),
+    );
+    return Promise.all(posts.map((post) => toPost(post, urls, avatarUrl)));
+  }
+
+  async function presentPage(
+    viewerId: string | undefined,
+    page: Page<PostRecord>,
+  ): Promise<Page<Post>> {
+    return { items: await present(viewerId, page.items), nextCursor: page.nextCursor };
   }
 
   return {
@@ -83,7 +96,9 @@ export function createPostsService({
         visibility: body.visibility,
         media: snaps.map((snap) => ({ snapId: snap.id, altText: contentAltText(snap) })),
       });
-      return toPost(post, storage, avatarUrl);
+      const [published] = await present(userId, [post]);
+      if (published === undefined) throw new Error('The published post is missing');
+      return published;
     },
 
     /**
@@ -121,7 +136,10 @@ export function createPostsService({
     /** The posts of the people the user follows and the user's own. */
     async feed(userId: string, page: PostPage): Promise<Page<Post>> {
       const rows = await repository.feed(userId, page);
-      return present(toPage(rows, page.limit, ({ id }) => id));
+      return presentPage(
+        userId,
+        toPage(rows, page.limit, ({ id }) => id),
+      );
     },
 
     /** A user's posts that the viewer may see: the public ones, or all of them for followers. */
@@ -133,7 +151,10 @@ export function createPostsService({
       const authorId = await repository.findActiveUserId(username);
       if (authorId === null) throw new AppError('USER_NOT_FOUND', 'User not found', 404);
       const rows = await repository.byAuthor(authorId, viewerId, page);
-      return present(toPage(rows, page.limit, ({ id }) => id));
+      return presentPage(
+        viewerId,
+        toPage(rows, page.limit, ({ id }) => id),
+      );
     },
 
     /** PUBLIC posts, newest first, optionally with one hashtag. */
@@ -143,7 +164,10 @@ export function createPostsService({
       page: PostPage,
     ): Promise<Page<Post>> {
       const rows = await repository.explore(hashtag, viewerId, page);
-      return present(toPage(rows, page.limit, ({ id }) => id));
+      return presentPage(
+        viewerId,
+        toPage(rows, page.limit, ({ id }) => id),
+      );
     },
 
     /** The hashtags of the most PUBLIC posts of the last trending_hashtags_days days. */

@@ -3,12 +3,13 @@ import type { Logger } from 'pino';
 import { AppError } from '../../lib/app-error';
 import type { EventBus } from '../../lib/events';
 import { PROCESSED_IMAGE_MIME_TYPE, type ImageProcessor } from '../../lib/images/image-processor';
-import { mapPage, toPage, type Page } from '../../lib/pagination';
+import { toPage, type Page } from '../../lib/pagination';
 import { deleteStoredObjects, type StorageProvider } from '../../lib/storage';
 import type { SpaceAccess } from '../../middlewares/require-space-role';
 import type { SettingsService } from '../settings/settings.service';
 import type { SpacesRepository } from '../spaces/spaces.repository';
 import type { AvatarUrlResolver } from '../users/avatars';
+import type { SnapImages } from './snap-images';
 import { createSnapPermissions } from './snap-permissions';
 import { newSnapStorageKeys } from './snap-storage-keys';
 import { toSnap, toSnapDetail } from './snaps.mappers';
@@ -23,6 +24,8 @@ export interface SnapsServiceDependencies {
   events: EventBus;
   logger: Logger;
   avatarUrl: AvatarUrlResolver;
+  /** Signs the photo URLs of the snaps the viewer can view (canViewSnap). */
+  snapImages: SnapImages;
 }
 
 export interface SnapUploadFields {
@@ -31,14 +34,16 @@ export interface SnapUploadFields {
 }
 
 export function createSnapsService(deps: SnapsServiceDependencies) {
-  const { repository, storage, avatarUrl } = deps;
+  const { repository, storage, avatarUrl, snapImages } = deps;
 
   function deleteObjects(keys: readonly string[]): Promise<void> {
     return deleteStoredObjects(storage, keys, deps.logger);
   }
 
-  function present(snap: SnapRecord): Promise<Snap> {
-    return toSnap(snap, storage, avatarUrl);
+  /** The snaps with the photo URLs the viewer may get. */
+  async function present(viewerId: string | undefined, snaps: SnapRecord[]): Promise<Snap[]> {
+    const urls = await snapImages.signedUrls(viewerId, snaps);
+    return Promise.all(snaps.map((snap) => toSnap(snap, urls, avatarUrl)));
   }
 
   const { findSnapForUser, assertCanModify } = createSnapPermissions({
@@ -108,26 +113,30 @@ export function createSnapsService(deps: SnapsServiceDependencies) {
       }
 
       for (const snap of created) deps.events.emit('snap.created', { snapId: snap.id });
-      return Promise.all(created.map(present));
+      return present(authorId, created);
     },
 
-    async list(access: SpaceAccess, filters: SnapFilters): Promise<Page<Snap>> {
+    async list(
+      access: SpaceAccess,
+      viewerId: string | undefined,
+      filters: SnapFilters,
+    ): Promise<Page<Snap>> {
       const rows = await repository.listInSpace(access.spaceId, filters);
-      return mapPage(
-        toPage(rows, filters.limit, ({ id }) => id),
-        present,
-      );
+      const page = toPage(rows, filters.limit, ({ id }) => id);
+      return { items: await present(viewerId, page.items), nextCursor: page.nextCursor };
     },
 
     async get(snapId: string, userId: string | undefined): Promise<SnapDetail> {
       const { snap } = await findSnapForUser(snapId, userId);
-      return toSnapDetail(snap, storage, avatarUrl);
+      return toSnapDetail(snap, await snapImages.signedUrls(userId, [snap]), avatarUrl);
     },
 
     async update(snapId: string, userId: string, body: UpdateSnapBody): Promise<Snap> {
       const { snap, memberRole } = await findSnapForUser(snapId, userId);
       assertCanModify(snap, userId, memberRole);
-      return present(await repository.update(snap.id, body));
+      const [updated] = await present(userId, [await repository.update(snap.id, body)]);
+      if (updated === undefined) throw new Error('The updated snap is missing');
+      return updated;
     },
 
     /** Deletes the snap from the database, then its files from storage. */

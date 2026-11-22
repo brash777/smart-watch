@@ -633,3 +633,27 @@ Anyone. `PUBLIC` posts, newest first, paginated; with `hashtag` (with or without
 ### `GET /api/explore/trending?limit=`
 
 Anyone. The hashtags of the most `PUBLIC` posts published in the last `trending_hashtags_days` days: `[{ "hashtag": "repostería", "postsCount": 12 }]`, most used first (`limit` as in pagination).
+
+## Likes and comments
+
+Only on posts you can see (`404 POST_NOT_FOUND` for unknown or hidden posts, `401` without a session and `403` for a `FOLLOWERS` post of someone you do not follow).
+
+### `POST /api/posts/:id/like`
+
+Signed in. Likes the post, or takes the like back when you already liked it (a double tap). **200** with `{ "liked": true, "likesCount": 4 }`.
+
+### `POST /api/posts/:id/comments`
+
+Signed in. Body: `{ "body": "¡Qué rico!" }`, trimmed, at most `comment_max_length` characters. **201** with the Comment: `id`, `postId`, `author`, `body` and `createdAt`. Errors: `400 COMMENT_TOO_LONG` (`details.maxLength`).
+
+### `GET /api/posts/:id/comments`
+
+Anyone who can see the post. The comments, oldest first, paginated. Comments hidden by an ADMIN and those of deactivated users are left out.
+
+### `DELETE /api/comments/:id`
+
+The author of the comment or the author of the post. **204**. Errors: `404 COMMENT_NOT_FOUND`, `403`.
+
+## Who can view a snap
+
+`canViewSnap(user, snap)` is the one rule for the photos of snaps (docs/PRODUCT.md, "Snaps outside their Space"): a user can view a snap when they can see its Space (a member, or anyone when the Space is `PUBLIC`), or when the snap is in a Post or an active Moment they may see. Every photo URL of a snap (`thumbnailUrl`, `imageUrl`, and the images of Posts and Moments) is signed only for the people the rule lets in; a photo that someone cannot view gets no URL.

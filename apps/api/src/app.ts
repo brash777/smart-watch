@@ -38,8 +38,14 @@ import {
   createSpaceDocumentsRouter,
 } from './modules/documents/documents.routes';
 import { createDocumentsService } from './modules/documents/documents.service';
+import { createCommentsRepository } from './modules/comments/comments.repository';
+import { createCommentsRouter, createPostCommentsRouter } from './modules/comments/comments.routes';
+import { createCommentsService } from './modules/comments/comments.service';
 import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
+import { createLikesRepository } from './modules/likes/likes.repository';
+import { createLikesRouter } from './modules/likes/likes.routes';
+import { createLikesService } from './modules/likes/likes.service';
 import { createMomentsRepository } from './modules/moments/moments.repository';
 import { createMomentsRouter } from './modules/moments/moments.routes';
 import { createMomentsService } from './modules/moments/moments.service';
@@ -60,11 +66,16 @@ import {
 } from './modules/snap-insights/snap-insights.routes';
 import { createSnapInsightsService } from './modules/snap-insights/snap-insights.service';
 import { createSnapSelection } from './modules/snap-insights/snap-selection';
+import { createSnapImages } from './modules/snaps/snap-images';
 import { createSnapPermissions } from './modules/snaps/snap-permissions';
+import { createSnapVisibility } from './modules/snaps/snap-visibility';
+import { createSnapVisibilityRepository } from './modules/snaps/snap-visibility.repository';
 import { createSnapsRepository } from './modules/snaps/snaps.repository';
 import { createSnapsRouter, createSpaceSnapsRouter } from './modules/snaps/snaps.routes';
 import { createSnapsService } from './modules/snaps/snaps.service';
 import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.routes';
+import { createPostAccess } from './modules/social/post-access';
+import { createPostAccessRepository } from './modules/social/post-access.repository';
 import { createSnapSharing } from './modules/social/snap-sharing';
 import { createSnapSharingRepository } from './modules/social/snap-sharing.repository';
 import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
@@ -148,6 +159,11 @@ export function createApp({
   });
   // Every user in a response carries a signed URL of their profile photo.
   const avatarUrl = createAvatarUrlResolver(storage);
+  // Snap photos get URLs only for the people who can view them (canViewSnap).
+  const snapImages = createSnapImages({
+    storage,
+    visibility: createSnapVisibility(createSnapVisibilityRepository(prisma)),
+  });
   const usersDependencies = { config, prisma, logger, storage, images, avatarUrl, authenticate };
 
   // Every AI call goes through one runner (validation, one retry, an AiRun per call).
@@ -219,7 +235,7 @@ export function createApp({
     repository: createMomentsRepository(prisma),
     sharing: snapSharing,
     settings,
-    storage,
+    snapImages,
     avatarUrl,
   });
   const postsRouterDependencies = {
@@ -229,7 +245,23 @@ export function createApp({
       sharing: snapSharing,
       draftTask: createPostDraftTask(aiTaskDependencies),
       settings,
-      storage,
+      snapImages,
+      avatarUrl,
+    }),
+    authenticate,
+    optionalAuth,
+  };
+  const postAccess = createPostAccess(createPostAccessRepository(prisma));
+  const likesService = createLikesService({
+    repository: createLikesRepository(prisma),
+    posts: postAccess,
+  });
+  const commentsRouterDependencies = {
+    config,
+    service: createCommentsService({
+      repository: createCommentsRepository(prisma),
+      posts: postAccess,
+      settings,
       avatarUrl,
     }),
     authenticate,
@@ -252,6 +284,7 @@ export function createApp({
       events,
       logger,
       avatarUrl,
+      snapImages,
     }),
     upload,
     authenticate,
@@ -311,6 +344,9 @@ export function createApp({
   api.use('/spaces', createAskRouter({ service: askService, authenticate, requireSpaceRole }));
   api.use('/moments', createMomentsRouter({ service: momentsService, authenticate }));
   api.use('/posts', createPostsRouter(postsRouterDependencies));
+  api.use('/posts', createLikesRouter({ service: likesService, authenticate }));
+  api.use('/posts', createPostCommentsRouter(commentsRouterDependencies));
+  api.use('/comments', createCommentsRouter(commentsRouterDependencies));
   api.use('/feed', createFeedRouter(postsRouterDependencies));
   api.use('/users', createPortfolioRouter(postsRouterDependencies));
   api.use('/explore', createExploreRouter(postsRouterDependencies));

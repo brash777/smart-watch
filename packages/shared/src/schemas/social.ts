@@ -92,3 +92,18 @@ export const trendingHashtagSchema = z.object({
   hashtag: z.string(),
   postsCount: z.number().int().positive(),
 });
+
+/** POST /api/posts/:id/like: the like after the toggle. */
+export const likeStateSchema = z.object({ liked: z.boolean(), likesCount: count });
+
+/** POST /api/posts/:id/comments (the maximum length is the comment_max_length setting). */
+export const createCommentBodySchema = z.object({ body: z.string().trim().min(1) });
+
+/** A Comment on a Post. */
+export const commentSchema = z.object({
+  id: z.uuid(),
+  postId: z.uuid(),
+  author: userSummarySchema,
+  body: z.string(),
+  createdAt: z.iso.datetime(),
+});

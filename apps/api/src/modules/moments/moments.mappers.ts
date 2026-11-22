@@ -1,23 +1,28 @@
 import type { Moment, MomentGroup } from '@snapia/shared';
-import type { StorageProvider } from '../../lib/storage';
+import type { SnapImageUrlMap } from '../snaps/snap-images';
 import { toSharedImage } from '../social/shared-images';
 import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
 import type { MomentRecord } from './moments.repository';
 
-/** A Moment for the viewer. Your own Moments count as seen and show their views. */
+/**
+ * A Moment for the viewer, or null when the viewer cannot view its snap (canViewSnap). Your own
+ * Moments count as seen and show their views.
+ */
 export async function toMoment(
   moment: MomentRecord,
   viewerId: string,
-  storage: StorageProvider,
+  urls: SnapImageUrlMap,
   avatarUrl: AvatarUrlResolver,
-): Promise<Moment> {
+): Promise<Moment | null> {
+  const image = toSharedImage(moment.snap, urls);
+  if (image === null) return null;
   const isMine = moment.authorId === viewerId;
   return {
     id: moment.id,
     author: await toUserSummary(moment.author, avatarUrl),
     audience: moment.audience,
-    image: await toSharedImage(moment.snap, storage),
+    image,
     expiresAt: moment.expiresAt.toISOString(),
     createdAt: moment.createdAt.toISOString(),
     viewedByMe: isMine || moment.views.length > 0,

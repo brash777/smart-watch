@@ -1,13 +1,21 @@
 import type { Snap, SnapDetail } from '@snapia/shared';
-import type { StorageProvider } from '../../lib/storage';
+import { AppError } from '../../lib/app-error';
 import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
+import type { SnapImageUrlMap, SnapImageUrls } from './snap-images';
 import type { SnapRecord } from './snaps.repository';
 
-/** A snap with a signed URL of its thumbnail (valid for SIGNED_URL_TTL_SECONDS). */
+/** The signed URLs of a snap (see snap-images.ts): a snap without them is never shown. */
+function urlsOf(snap: SnapRecord, urls: SnapImageUrlMap): SnapImageUrls {
+  const signed = urls.get(snap.id);
+  if (signed === undefined) throw new AppError('FORBIDDEN', 'You cannot view this snap', 403);
+  return signed;
+}
+
+/** A snap with a signed URL of its thumbnail. */
 export async function toSnap(
   snap: SnapRecord,
-  storage: StorageProvider,
+  urls: SnapImageUrlMap,
   avatarUrl: AvatarUrlResolver,
 ): Promise<Snap> {
   return {
@@ -22,7 +30,7 @@ export async function toSnap(
     sizeBytes: snap.sizeBytes,
     mimeType: snap.mimeType,
     analysisStatus: snap.analysisStatus,
-    thumbnailUrl: await storage.getSignedUrl(snap.thumbnailKey),
+    thumbnailUrl: urlsOf(snap, urls).thumbnailUrl,
     createdAt: snap.createdAt.toISOString(),
   };
 }
@@ -30,11 +38,8 @@ export async function toSnap(
 /** A snap with signed URLs of its thumbnail and of the full image. */
 export async function toSnapDetail(
   snap: SnapRecord,
-  storage: StorageProvider,
+  urls: SnapImageUrlMap,
   avatarUrl: AvatarUrlResolver,
 ): Promise<SnapDetail> {
-  return {
-    ...(await toSnap(snap, storage, avatarUrl)),
-    imageUrl: await storage.getSignedUrl(snap.storageKey),
-  };
+  return { ...(await toSnap(snap, urls, avatarUrl)), imageUrl: urlsOf(snap, urls).imageUrl };
 }

@@ -1,11 +1,14 @@
 import type { z } from 'zod';
 import type {
+  commentSchema,
+  createCommentBodySchema,
   createMomentBodySchema,
   createPostBodySchema,
   momentGroupSchema,
   momentSchema,
   postDraftBodySchema,
   postDraftSchema,
+  likeStateSchema,
   postSchema,
   sharedImageSchema,
   trendingHashtagSchema,
@@ -20,3 +23,6 @@ export type PostDraftBody = z.infer<typeof postDraftBodySchema>;
 export type PostDraft = z.infer<typeof postDraftSchema>;
 export type Post = z.infer<typeof postSchema>;
 export type TrendingHashtag = z.infer<typeof trendingHashtagSchema>;
+export type LikeState = z.infer<typeof likeStateSchema>;
+export type CreateCommentBody = z.infer<typeof createCommentBodySchema>;
+export type Comment = z.infer<typeof commentSchema>;

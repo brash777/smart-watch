@@ -20,7 +20,11 @@ export function createSnapsController(service: SnapsService, inputs: SnapsInputs
 
   const list: RequestHandler = async (req, res) => {
     const { query } = getValidatedInput(res, inputs.list);
-    const { items, nextCursor } = await service.list(requireSpaceAccess(req), query);
+    const { items, nextCursor } = await service.list(
+      requireSpaceAccess(req),
+      req.auth?.userId,
+      query,
+    );
     res.json({ data: items, meta: { nextCursor } });
   };
 

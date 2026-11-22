@@ -28,11 +28,18 @@ export function createDocumentsController(service: DocumentsService, inputs: Doc
     res.json({ data: await service.update(params.id, requireAuth(req).userId, body) });
   };
 
+  /** The file is downloaded: Content-Disposition carries its name. */
+  const exportFile: RequestHandler = async (req, res) => {
+    const { params, query } = getValidatedInput(res, inputs.export);
+    const file = await service.export(params.id, req.auth?.userId, query.format);
+    res.status(200).type(file.contentType).attachment(file.fileName).send(file.body);
+  };
+
   const remove: RequestHandler = async (req, res) => {
     const { params } = getValidatedInput(res, inputs.document);
     await service.remove(params.id, requireAuth(req).userId);
     res.status(204).end();
   };
 
-  return { compose, list, get, update, remove };
+  return { compose, list, get, update, exportFile, remove };
 }

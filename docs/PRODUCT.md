@@ -63,7 +63,7 @@ These names are used exactly as written in code (Prisma models, TypeScript types
 - **SpaceInvite**: a code to join a Space. It sets the role it grants, an expiration date and a maximum number of uses.
 - **Snap**: a photo uploaded to a Space, with an optional note, tags and the date it was taken.
 - **SnapInsight**: the AI analysis of one snap. Its content depends on the Space mode (see [Space modes](#3-space-modes)).
-- **Document**: what the AI builds from several snaps with the **Compose** action. It is edited in Markdown and exported to PDF, Word or Markdown. Types by mode:
+- **Document**: what the AI builds from several snaps with the **Compose** action. It is edited in Markdown and exported to PDF or Markdown. Types by mode:
   - STUDY: `STUDY_NOTES`, `STUDY_SUMMARY`, `ASSIGNMENT_GUIDE`
   - WORK: `WORK_DAILY_REPORT`, `WORK_PROGRESS_REPORT`
   - CONTENT: `CONTENT_POST`, `CONTENT_CAROUSEL`
@@ -161,7 +161,7 @@ Every Space has exactly one mode, chosen when the Space is created. The mode dec
 4. **Select several snaps** from the Space. In a shared Space they can come from any member.
 5. **Compose.** Choose a Document type allowed by the Space mode. The AI builds the Document from the selected snaps, their notes and their insights, and cites the snaps it used.
 6. **Review and edit** the Document in Markdown.
-7. **Export or publish.** Export to PDF, Word or Markdown or, in a CONTENT Space, publish the result as a Post.
+7. **Export or publish.** Export to PDF or Markdown or, in a CONTENT Space, publish the result as a Post.
 
 ---
 
@@ -285,6 +285,7 @@ Not planned for now:
 - Native mobile apps (Snapia is a PWA).
 - Payments and subscriptions.
 - Push notifications.
+- Word export of Documents (they export to PDF and Markdown).
 
 ---
 

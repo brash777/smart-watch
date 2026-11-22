@@ -1,5 +1,6 @@
 import {
   composeDocumentBodySchema,
+  documentExportFormatSchema,
   documentTypeSchema,
   updateDocumentBodySchema,
 } from '@snapia/shared';
@@ -20,6 +21,7 @@ export function createDocumentsInputs(pagination: Config['pagination']) {
     },
     document: { params: documentParams },
     update: { params: documentParams, body: updateDocumentBodySchema },
+    export: { params: documentParams, query: z.object({ format: documentExportFormatSchema }) },
   } satisfies Record<string, RequestSchemas>;
 }
 

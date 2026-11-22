@@ -40,11 +40,12 @@ export function createSpaceDocumentsRouter(deps: DocumentsRouterDependencies): R
   return router;
 }
 
-/** /api/documents: read, edit and delete one Document. */
+/** /api/documents: read, export, edit and delete one Document. */
 export function createDocumentsRouter(deps: DocumentsRouterDependencies): Router {
   const { inputs, controller } = createDocumentsModule(deps);
   const router = Router();
   router.get('/:id', deps.optionalAuth, validate(inputs.document), controller.get);
+  router.get('/:id/export', deps.optionalAuth, validate(inputs.export), controller.exportFile);
   router.patch('/:id', deps.authenticate, validate(inputs.update), controller.update);
   router.delete('/:id', deps.authenticate, validate(inputs.document), controller.remove);
   return router;

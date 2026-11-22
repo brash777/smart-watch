@@ -393,3 +393,71 @@ describe('Documents: list, read, edit and delete', () => {
     expect(await prisma.documentSource.count()).toBe(0);
   });
 });
+
+describe('GET /api/documents/:id/export', () => {
+  async function withNotes() {
+    const context = await scenario();
+    const response = await request(context.app)
+      .post(context.composeUrl)
+      .set(context.tokens.leo)
+      .send({ type: 'STUDY_NOTES', snapIds: [context.snaps.may1, context.snaps.may2] });
+    const document = documentResponseSchema.parse(response.body).data;
+    return { ...context, document, exportUrl: `/api/documents/${document.id}/export` };
+  }
+
+  it('downloads the Markdown with the title on top', async () => {
+    const { app, tokens, document, exportUrl } = await withNotes();
+
+    const response = await request(app).get(exportUrl).query({ format: 'md' }).set(tokens.sol);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('text/markdown; charset=utf-8');
+    expect(response.headers['content-disposition']).toBe(
+      'attachment; filename=apuntes-regla-de-la-cadena.md',
+    );
+    expect(response.text).toBe(`# ${document.title}\n\n${document.contentMarkdown}\n`);
+  });
+
+  it('downloads a PDF that is not empty', async () => {
+    const { app, tokens, exportUrl } = await withNotes();
+
+    const response = await request(app)
+      .get(exportUrl)
+      .query({ format: 'pdf' })
+      .set(tokens.sol)
+      .buffer(true)
+      .parse((res, callback) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => {
+          callback(null, Buffer.concat(chunks));
+        });
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/pdf');
+    expect(response.headers['content-disposition']).toBe(
+      'attachment; filename=apuntes-regla-de-la-cadena.pdf',
+    );
+    const pdf = response.body as Buffer;
+    expect(pdf.length).toBeGreaterThan(1000);
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(pdf.includes(`(${createTestConfig().app.name})`)).toBe(true);
+  });
+
+  it('needs a known format and access to the Space', async () => {
+    const { app, tokens, exportUrl } = await withNotes();
+    const download = (token: Record<string, string>, format = 'pdf') =>
+      request(app).get(exportUrl).query({ format }).set(token);
+
+    expect(readError((await download(tokens.ana, 'docx')).body).code).toBe('VALIDATION_ERROR');
+    expect((await download({})).status).toBe(401);
+    expect((await download(tokens.out)).status).toBe(403);
+    expect(
+      readError(
+        (await request(app).get(`/api/documents/${randomUUID()}/export?format=md`).set(tokens.ana))
+          .body,
+      ).code,
+    ).toBe('DOCUMENT_NOT_FOUND');
+  });
+});

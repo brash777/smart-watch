@@ -548,3 +548,12 @@ Errors: `400 INVALID_ANSWERS` (`details.expected` when the number of answers is 
 ```
 
 `citedSnapIds` are the snaps the answer cites, in order. Errors: `409 NO_ANALYZED_SNAPS` (the Space has no analyzed snap yet) and the AI errors of Compose.
+
+### `GET /api/documents/:id/export?format=md|pdf`
+
+Anyone who can see the Document's Space. Downloads the Document (`Content-Disposition: attachment`, with a file name made from the title):
+
+- `md`: `text/markdown`, the title as a `#` heading followed by the Markdown.
+- `pdf`: `application/pdf`, A4, with `APP_NAME` and the page number in the footer of every page. Formulas stay as LaTeX text.
+
+An `ASSIGNMENT_GUIDE` always starts with the `assignment_guide_notice`, even if its author removed it. There is no Word export. Errors: `400 VALIDATION_ERROR` (missing or unknown `format`), `404 DOCUMENT_NOT_FOUND`, `401`, `403`.

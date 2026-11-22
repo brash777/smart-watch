@@ -2,6 +2,7 @@ import {
   documentTypesByMode,
   type ComposeDocumentBody,
   type Document,
+  type DocumentExportFormat,
   type DocumentSummary,
   type DocumentType,
   type UpdateDocumentBody,
@@ -15,6 +16,7 @@ import type { SnapSelection } from '../snap-insights/snap-selection';
 import type { SpaceContentPermissions } from '../spaces/space-content-permissions';
 import type { AvatarUrlResolver } from '../users/avatars';
 import { withAssignmentNotice } from './assignment-notice';
+import { exportDocument, type ExportedDocument } from './document-export';
 import { toDocument, toDocumentSummary } from './documents.mappers';
 import type { DocumentListQuery, DocumentsRepository } from './documents.repository';
 
@@ -25,6 +27,8 @@ export interface DocumentsServiceDependencies {
   permissions: SpaceContentPermissions;
   settings: SettingsService;
   avatarUrl: AvatarUrlResolver;
+  /** APP_NAME, in the footer of exported PDFs. */
+  appName: string;
 }
 
 export function createDocumentsService({
@@ -34,6 +38,7 @@ export function createDocumentsService({
   permissions,
   settings,
   avatarUrl,
+  appName,
 }: DocumentsServiceDependencies) {
   /** The Document and the caller's role in its Space, checked like requireSpaceRole('VIEWER'). */
   async function findForUser(documentId: string, userId: string | undefined) {
@@ -120,6 +125,23 @@ export function createDocumentsService({
       const { document, memberRole } = await findForUser(documentId, userId);
       permissions.assertCanModify(document.authorId, userId, memberRole);
       return toDocument(await repository.update(document.id, body), avatarUrl);
+    },
+
+    /** The Document as a Markdown or PDF file, for anyone who can see it. */
+    async export(
+      documentId: string,
+      userId: string | undefined,
+      format: DocumentExportFormat,
+    ): Promise<ExportedDocument> {
+      const { document } = await findForUser(documentId, userId);
+      return exportDocument(document, {
+        format,
+        assignmentNotice:
+          document.type === 'ASSIGNMENT_GUIDE'
+            ? await settings.getSetting('assignment_guide_notice')
+            : '',
+        appName,
+      });
     },
 
     async remove(documentId: string, userId: string): Promise<void> {

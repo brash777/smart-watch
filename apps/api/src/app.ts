@@ -183,6 +183,7 @@ export function createApp({
       permissions: contentPermissions,
       settings,
       avatarUrl,
+      appName: config.app.name,
     }),
     authenticate,
     optionalAuth,

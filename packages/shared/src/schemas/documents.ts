@@ -69,3 +69,6 @@ export const documentSchema = documentSummarySchema.extend({
   promptVersion: z.string(),
   sources: z.array(z.object({ snapId: z.uuid(), order: z.number().int().positive() })),
 });
+
+/** GET /api/documents/:id/export?format= */
+export const documentExportFormatSchema = z.enum(['md', 'pdf']);

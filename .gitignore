@@ -17,9 +17,11 @@ playwright-report/
 .env.*
 !.env.example
 
-# Local file storage
-uploads/
-storage/
+# Local file storage (LOCAL_STORAGE_DIR); anchored so source folders named "storage" are kept
+/uploads/
+/storage/
+apps/*/uploads/
+apps/*/storage/
 
 # Logs
 *.log

@@ -1,0 +1,4 @@
+{
+  "title": "Guía: aplicaciones de la regla de la cadena",
+  "contentMarkdown": "## Esquema propuesto\n\n1. Qué es una función compuesta.\n2. La regla de la cadena.\n3. Un ejemplo resuelto.\n\n## Ideas clave por sección\n\n- Una función compuesta aplica una función al resultado de otra [Snap 1].\n- La regla multiplica la derivada externa por la interna [Snap 1].\n\n## Preguntas para profundizar\n\n- ¿Por qué se multiplica por la derivada de la función interna?\n\n## Vacíos de información\n\n- Los snaps no muestran aplicaciones a problemas de física.\n\n## Fuentes\n\n- [Snap 1]: definición de la regla de la cadena.\n- [Snap 1]: ejemplo resuelto."
+}

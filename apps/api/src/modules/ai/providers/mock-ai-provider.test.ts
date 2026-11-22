@@ -1,4 +1,9 @@
-import { snapInsightDataSchemas, type SpaceMode } from '@snapia/shared';
+import {
+  documentDraftSchema,
+  documentTypeSchema,
+  snapInsightDataSchemas,
+  type SpaceMode,
+} from '@snapia/shared';
 import { describe, expect, it } from 'vitest';
 import { AiProviderError, type AiRequest } from '../ai-provider';
 import { createMockAiProvider } from './mock-ai-provider';
@@ -26,6 +31,21 @@ describe('MockAiProvider', () => {
 
       expect(reply.stopReason).toBe('tool_use');
       expect(snapInsightDataSchemas[mode].safeParse(reply.toolCall?.input).success).toBe(true);
+    },
+  );
+
+  it.each(documentTypeSchema.options)(
+    'drafts a %s with a fixture that only cites [Snap 1]',
+    async (type) => {
+      const provider = createMockAiProvider({ model: 'test-model' });
+
+      const reply = await provider
+        .startConversation(requestFor(`compose.${type.toLowerCase().replaceAll('_', '-')}`))
+        .send();
+
+      const draft = documentDraftSchema.parse(reply.toolCall?.input);
+      expect(draft.contentMarkdown).toContain('[Snap 1]');
+      expect(draft.contentMarkdown).not.toMatch(/\[Snap [^1]\]/);
     },
   );
 

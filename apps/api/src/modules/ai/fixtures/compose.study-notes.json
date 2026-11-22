@@ -1,0 +1,4 @@
+{
+  "title": "Apuntes: regla de la cadena",
+  "contentMarkdown": "## Regla de la cadena\n\nSi $y = f(g(x))$, su derivada es $f'(g(x)) \\cdot g'(x)$ [Snap 1].\n\n### Ejemplo resuelto\n\n- $y = (3x^2 + 1)^5$\n- $y' = 5(3x^2 + 1)^4 \\cdot 6x$ [Snap 1]\n\n## Conceptos clave\n\n- **Función compuesta**: una función aplicada al resultado de otra [Snap 1]."
+}

@@ -386,6 +386,8 @@ model Document {
   contentMarkdown String         @map("content_markdown")
   status          DocumentStatus @default(DRAFT)
   version         Int            @default(1)
+  /// Prompt file that produced the first draft, e.g. compose.study-notes.v1.
+  promptVersion   String         @map("prompt_version")
   aiRunId         String?        @map("ai_run_id") @db.Uuid
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")

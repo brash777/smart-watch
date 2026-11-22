@@ -24,3 +24,17 @@ export const aiTaskSchema = z.enum([
   'ASK_SPACE',
   'POST_DRAFT',
 ]);
+
+/** What Compose builds; each Space mode offers its own types (documentTypesByMode). */
+export const documentTypeSchema = z.enum([
+  'STUDY_NOTES',
+  'STUDY_SUMMARY',
+  'ASSIGNMENT_GUIDE',
+  'WORK_DAILY_REPORT',
+  'WORK_PROGRESS_REPORT',
+  'CONTENT_POST',
+  'CONTENT_CAROUSEL',
+]);
+
+/** A Document starts as a DRAFT; its author marks it FINAL. */
+export const documentStatusSchema = z.enum(['DRAFT', 'FINAL']);

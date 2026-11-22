@@ -21,10 +21,17 @@ import type { AiProvider } from './modules/ai/ai-provider';
 import { createAiRunner } from './modules/ai/ai-runner';
 import { createAiRunsRepository } from './modules/ai/ai-runs.repository';
 import { createPromptLoader } from './modules/ai/prompt-loader';
+import { createComposeDocumentTask } from './modules/ai/tasks/compose-document';
 import { createSnapAnalysisTask } from './modules/ai/tasks/snap-analysis';
 import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
+import { createDocumentsRepository } from './modules/documents/documents.repository';
+import {
+  createDocumentsRouter,
+  createSpaceDocumentsRouter,
+} from './modules/documents/documents.routes';
+import { createDocumentsService } from './modules/documents/documents.service';
 import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
 import { createSettingsRepository } from './modules/settings/settings.repository';
@@ -35,12 +42,14 @@ import {
   createSpaceAnalysisRouter,
 } from './modules/snap-insights/snap-insights.routes';
 import { createSnapInsightsService } from './modules/snap-insights/snap-insights.service';
+import { createSnapSelection } from './modules/snap-insights/snap-selection';
 import { createSnapPermissions } from './modules/snaps/snap-permissions';
 import { createSnapsRepository } from './modules/snaps/snaps.repository';
 import { createSnapsRouter, createSpaceSnapsRouter } from './modules/snaps/snaps.routes';
 import { createSnapsService } from './modules/snaps/snaps.service';
 import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.routes';
 import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
+import { createSpaceContentPermissions } from './modules/spaces/space-content-permissions';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
 import { createSpacesRouter } from './modules/spaces/spaces.routes';
 import { createAvatarUrlResolver } from './modules/users/avatars';
@@ -119,25 +128,23 @@ export function createApp({
   const avatarUrl = createAvatarUrlResolver(storage);
   const usersDependencies = { config, prisma, logger, storage, images, avatarUrl, authenticate };
 
-  // Every new snap is analyzed in the background; the upload never waits for the AI.
+  // Every AI call goes through one runner (validation, one retry, an AiRun per call).
   const prompts = createPromptLoader();
+  const aiRunner = createAiRunner({
+    provider: aiProvider,
+    runs: createAiRunsRepository(prisma),
+    settings,
+    prompts,
+    logger,
+  });
+  const aiTaskDependencies = { runner: aiRunner, prompts, settings, config: config.ai };
+
+  // Every new snap is analyzed in the background; the upload never waits for the AI.
   const snapInsightsRepository = createSnapInsightsRepository(prisma);
   const aiQueue = createAiQueue({
     concurrency: config.ai.queueConcurrency,
     store: snapInsightsRepository,
-    snapAnalysis: createSnapAnalysisTask({
-      runner: createAiRunner({
-        provider: aiProvider,
-        runs: createAiRunsRepository(prisma),
-        settings,
-        prompts,
-        logger,
-      }),
-      prompts,
-      settings,
-      storage,
-      config: config.ai,
-    }),
+    snapAnalysis: createSnapAnalysisTask({ ...aiTaskDependencies, storage }),
     logger,
   });
   events.on('snap.created', ({ snapId }) => {
@@ -151,6 +158,20 @@ export function createApp({
       permissions: createSnapPermissions({ snaps: snapsRepository, spaces: spacesRepository }),
       settings,
       queue: aiQueue,
+    }),
+    authenticate,
+    optionalAuth,
+    requireSpaceRole,
+  };
+  const documentsRouterDependencies = {
+    config,
+    service: createDocumentsService({
+      repository: createDocumentsRepository(prisma),
+      snapSelection: createSnapSelection({ repository: snapInsightsRepository, settings }),
+      composer: createComposeDocumentTask(aiTaskDependencies),
+      permissions: createSpaceContentPermissions(spacesRepository),
+      settings,
+      avatarUrl,
     }),
     authenticate,
     optionalAuth,
@@ -219,6 +240,8 @@ export function createApp({
   api.use('/spaces', createSpaceAnalysisRouter(snapInsightsRouterDependencies));
   api.use('/snaps', createSnapsRouter(snapsRouterDependencies));
   api.use('/snaps', createSnapInsightsRouter(snapInsightsRouterDependencies));
+  api.use('/spaces', createSpaceDocumentsRouter(documentsRouterDependencies));
+  api.use('/documents', createDocumentsRouter(documentsRouterDependencies));
   app.use('/api', api);
 
   app.use(notFound);

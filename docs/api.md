@@ -429,3 +429,53 @@ Same permission as `PATCH`. Analyzes a `DONE` or `FAILED` snap again; its AiRuns
   }
 }
 ```
+
+## Documents (Compose)
+
+**Compose** turns several analyzed snaps into a **Document**. The AI gets the SnapInsight of each snap (plus its note, tags, date and time, and its author as a neutral label such as `Member 1`), numbered by the date the photos were taken: the text cites the N-th snap as `[Snap N]`, and the Document keeps the snaps as its ordered `sources`. Photos are not sent again, and emails, phone numbers and people's names never reach the AI. The prompt of each type is `prompts/compose.<type>.v<N>.md`; the call is an AiRun (`COMPOSE_DOCUMENT`, effort `AI_EFFORT`), and a draft that cites a snap that was not sent is retried once.
+
+| Mode      | Types                                                                                                                                                                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STUDY`   | `STUDY_NOTES` (notes ordered by topic), `STUDY_SUMMARY` (summary and key ideas), `ASSIGNMENT_GUIDE` (outline, key ideas, questions, gaps and sources; it never writes the assignment and starts with `assignment_guide_notice`) |
+| `WORK`    | `WORK_DAILY_REPORT` (summary, timeline by hour, issues, next steps), `WORK_PROGRESS_REPORT` (progress over the period of the snaps and what is pending)                                                                         |
+| `CONTENT` | `CONTENT_POST` (caption, hashtags with `default_hashtags`, alt text), `CONTENT_CAROUSEL` (order of the photos, text per slide, caption, hashtags, alt text)                                                                     |
+
+A **Document** in responses (lists leave out `instructions`, `contentMarkdown`, `promptVersion` and `sources`):
+
+```json
+{
+  "id": "0196…",
+  "spaceId": "0196…",
+  "author": { "id": "0196…", "name": "Leo Demo", "username": "leo.demo", "avatarUrl": null },
+  "type": "STUDY_NOTES",
+  "title": "Apuntes: regla de la cadena",
+  "status": "DRAFT",
+  "version": 1,
+  "instructions": "Enfócate en los ejemplos.",
+  "contentMarkdown": "## Regla de la cadena\n\nSi $y = f(g(x))$… [Snap 1]",
+  "promptVersion": "compose.study-notes.v1",
+  "sources": [{ "snapId": "0196…", "order": 1 }],
+  "createdAt": "2026-11-22T14:00:00.000Z",
+  "updatedAt": "2026-11-22T14:00:00.000Z"
+}
+```
+
+### `POST /api/spaces/:spaceId/documents`
+
+`EDITOR` or `OWNER`. Body: `type` (a type of the Space mode), `snapIds` (at least one; at most `max_snaps_per_compose`; repeats are ignored) and `instructions` (optional extra instructions; for `ASSIGNMENT_GUIDE`, the assignment statement, required). The request waits for the AI. **201** with the Document. Errors: `400 DOCUMENT_TYPE_NOT_ALLOWED` (`details`: `mode`, `allowedTypes`), `400 INSTRUCTIONS_REQUIRED`, `400 TOO_MANY_SNAPS` (`details.limit`), `404 SNAP_NOT_FOUND` (`details.snapIds`: snaps that are not in the Space), `409 SNAPS_NOT_ANALYZED` (`details.snapIds`: snaps that are not `DONE`), and the AI errors: `502 AI_INVALID_OUTPUT`, `422 AI_REFUSED`, `502 AI_OUTPUT_TRUNCATED`, `503 AI_RATE_LIMITED`, `503 AI_UNAVAILABLE`, `504 AI_TIMEOUT`.
+
+### `GET /api/spaces/:spaceId/documents`
+
+`VIEWER` (or anyone, for a `PUBLIC` Space). Newest first, paginated. Filter: `type`.
+
+### `GET /api/documents/:id`
+
+Anyone who can see the Document's Space. **200** with the Document. Errors: `404 DOCUMENT_NOT_FOUND`, `401`, `403`.
+
+### `PATCH /api/documents/:id`
+
+The author (while `EDITOR` or `OWNER`) or an `OWNER`. Body with `title`, `contentMarkdown` and/or `status` (`DRAFT`, `FINAL`). Every edit increases `version`. **200** with the Document.
+
+### `DELETE /api/documents/:id`
+
+Same permission as `PATCH`. **204**.

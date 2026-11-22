@@ -15,6 +15,17 @@ const insightSelect = {
   updatedAt: true,
 } as const;
 
+/** A snap with what AI tasks read about it. */
+const analyzedSnapSelect = {
+  id: true,
+  authorId: true,
+  takenAt: true,
+  note: true,
+  tags: true,
+  analysisStatus: true,
+  insight: { select: { mode: true, data: true } },
+} as const;
+
 /** The columns that mirror the content: summary, and the text read in STUDY snaps. */
 function contentColumns(data: SnapInsightData) {
   return {
@@ -118,6 +129,15 @@ export function createSnapInsightsRepository(prisma: PrismaClient) {
       return count === 1;
     },
 
+    /** Snaps of a Space among the given ids, with their insight, the first taken first. */
+    findSnapsWithInsight(spaceId: string, snapIds: readonly string[]) {
+      return prisma.snap.findMany({
+        where: { spaceId, id: { in: [...snapIds] } },
+        orderBy: [{ takenAt: 'asc' }, { id: 'asc' }],
+        select: analyzedSnapSelect,
+      });
+    },
+
     /** How many snaps of the Space are in each analysis status. */
     async countByStatus(spaceId: string): Promise<Record<AnalysisStatus, number>> {
       const groups = await prisma.snap.groupBy({
@@ -138,3 +158,6 @@ export type SnapInsightsRepository = ReturnType<typeof createSnapInsightsReposit
 export type SnapInsightRecord = NonNullable<
   Awaited<ReturnType<SnapInsightsRepository['findInsight']>>
 >;
+export type SnapWithInsightRecord = Awaited<
+  ReturnType<SnapInsightsRepository['findSnapsWithInsight']>
+>[number];

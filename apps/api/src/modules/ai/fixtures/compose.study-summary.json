@@ -1,0 +1,4 @@
+{
+  "title": "Resumen: regla de la cadena",
+  "contentMarkdown": "La clase presenta la regla de la cadena para derivar funciones compuestas y la aplica a un ejemplo [Snap 1].\n\n## Ideas clave\n\n- La derivada de $f(g(x))$ es $f'(g(x)) \\cdot g'(x)$ [Snap 1].\n- Primero se deriva la función externa y luego se multiplica por la derivada de la interna [Snap 1]."
+}

@@ -73,7 +73,7 @@ describe('createPromptLoader', () => {
 
 describe('the prompt files of the AI module', () => {
   const prompts = createPromptLoader();
-  const snapAnalysisPlaceholders = [
+  const snapAnalysis = [
     'author_note',
     'output_language',
     'snap_tags',
@@ -81,17 +81,33 @@ describe('the prompt files of the AI module', () => {
     'taken_at',
     'tool_name',
   ];
-
-  it.each([
-    ['snap-analysis.study', snapAnalysisPlaceholders],
-    ['snap-analysis.work', snapAnalysisPlaceholders],
-    ['snap-analysis.content', [...snapAnalysisPlaceholders, 'caption_tone'].sort()],
+  const compose = [
+    'instructions',
+    'output_language',
+    'snap_count',
+    'snaps',
+    'space_metadata',
+    'tool_name',
+  ];
+  const promptFiles: [name: string, placeholders: string[]][] = [
+    ['snap-analysis.study', snapAnalysis],
+    ['snap-analysis.work', snapAnalysis],
+    ['snap-analysis.content', [...snapAnalysis, 'caption_tone']],
+    ['compose.study-notes', compose],
+    ['compose.study-summary', compose],
+    ['compose.assignment-guide', compose],
+    ['compose.work-daily-report', compose],
+    ['compose.work-progress-report', [...compose, 'period']],
+    ['compose.content-post', [...compose, 'caption_tone', 'default_hashtags']],
+    ['compose.content-carousel', [...compose, 'caption_tone', 'default_hashtags']],
     ['retry-invalid-output', ['issues', 'tool_name']],
     ['retry-missing-tool-call', ['tool_name']],
-  ])('%s is at version 1 with its placeholders', async (name, placeholders) => {
+  ];
+
+  it.each(promptFiles)('%s is at version 1 with its placeholders', async (name, placeholders) => {
     const template = await prompts.load(name);
 
     expect(template.version).toBe(`${name}.v1`);
-    expect([...template.placeholders].sort()).toEqual(placeholders);
+    expect([...template.placeholders].sort()).toEqual([...placeholders].sort());
   });
 });

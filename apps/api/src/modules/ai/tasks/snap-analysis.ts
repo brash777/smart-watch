@@ -1,12 +1,12 @@
-import { snapInsightDataSchemas, type SnapInsightDataByMode, type SpaceMode } from '@snapia/shared';
+import { snapInsightDataSchemas, type SpaceMode } from '@snapia/shared';
 import type { z } from 'zod';
 import type { Config } from '../../../config/env';
-import { removeContactDetails } from '../../../lib/personal-data';
 import type { StorageProvider } from '../../../lib/storage';
 import type { SettingsService } from '../../settings/settings.service';
 import { prepareImageForAi } from '../ai-images';
 import type { AiRunner } from '../ai-runner';
 import type { PromptLoader } from '../prompt-loader';
+import { describeSpaceMetadata, NONE, textForAi, type SnapInsightData } from '../snap-context';
 
 /*
  * The quick analysis of one snap (task SNAP_ANALYSIS): the photo plus a prompt for the mode of
@@ -25,7 +25,7 @@ export interface SnapForAnalysis {
   space: { mode: SpaceMode; metadata: unknown };
 }
 
-export type SnapInsightData = SnapInsightDataByMode[SpaceMode];
+export type { SnapInsightData } from '../snap-context';
 
 /** The result, ready to be stored as the snap's SnapInsight. */
 export interface SnapAnalysis {
@@ -40,22 +40,6 @@ export const SAVE_SNAP_INSIGHT_TOOL = {
   name: 'save_snap_insight',
   description: 'Saves the analysis of the snap. Call it once, with every field filled in.',
 };
-
-/**
- * Space metadata that helps to read a snap. Fields that name people (professor, client) are
- * never sent to the AI.
- */
-const SPACE_CONTEXT_FIELDS = {
-  STUDY: ['subject', 'semester'],
-  WORK: ['project', 'siteLabel'],
-  CONTENT: ['niche'],
-} as const satisfies Record<SpaceMode, readonly string[]>;
-
-/** What the prompt says when a value is empty. */
-const NONE = '(none)';
-
-/** Tags that would close the delimited note early. */
-const NOTE_DELIMITERS = /<\/?author_note>/gi;
 
 export interface SnapAnalysisTaskDependencies {
   runner: AiRunner;
@@ -74,22 +58,7 @@ export function createSnapAnalysisTask({
 }: SnapAnalysisTaskDependencies) {
   /** Text written by people: no emails or phone numbers, and at most AI_CONTEXT_MAX_CHARS. */
   function peopleText(text: string): string {
-    return removeContactDetails(text)
-      .replace(NOTE_DELIMITERS, '')
-      .slice(0, config.contextMaxChars)
-      .trim();
-  }
-
-  function spaceContext(mode: SpaceMode, metadata: unknown): string {
-    const fields: Record<string, unknown> =
-      typeof metadata === 'object' && metadata !== null ? { ...metadata } : {};
-    const lines = SPACE_CONTEXT_FIELDS[mode].flatMap((field) => {
-      const value = fields[field];
-      return typeof value === 'string' && value.trim() !== ''
-        ? [`  - ${field}: ${peopleText(value)}`]
-        : [];
-    });
-    return lines.length > 0 ? lines.join('\n') : `  - ${NONE}`;
+    return textForAi(text, config.contextMaxChars);
   }
 
   return {
@@ -101,7 +70,7 @@ export function createSnapAnalysisTask({
       const values: Record<string, string> = {
         tool_name: SAVE_SNAP_INSIGHT_TOOL.name,
         output_language: await settings.getSetting('ai_output_language'),
-        space_metadata: spaceContext(mode, metadata),
+        space_metadata: describeSpaceMetadata(mode, metadata, config.contextMaxChars),
         taken_at: snap.takenAt.toISOString(),
         snap_tags: tags === '' ? NONE : tags,
         author_note: note === '' ? NONE : note,

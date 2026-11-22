@@ -35,6 +35,8 @@ export const appSettingDefinitions = {
   max_snaps_per_space: { valueType: 'NUMBER', schema: positiveInt },
   /** Maximum snaps selected for one Compose. */
   max_snaps_per_compose: { valueType: 'NUMBER', schema: positiveInt },
+  /** Maximum snaps in one Post. */
+  max_snaps_per_post: { valueType: 'NUMBER', schema: positiveInt },
   /** Characters of a SpaceInvite code. */
   invite_code_length: { valueType: 'NUMBER', schema: positiveInt },
   /** Hours an invite stays valid when the OWNER does not choose. */

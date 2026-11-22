@@ -557,3 +557,79 @@ Anyone who can see the Document's Space. Downloads the Document (`Content-Dispos
 - `pdf`: `application/pdf`, A4, with `APP_NAME` and the page number in the footer of every page. Formulas stay as LaTeX text.
 
 An `ASSIGNMENT_GUIDE` always starts with the `assignment_guide_notice`, even if its author removed it. There is no Word export. Errors: `400 VALIDATION_ERROR` (missing or unknown `format`), `404 DOCUMENT_NOT_FOUND`, `401`, `403`.
+
+## Social: Moments, Posts, feed and Explore
+
+A snap leaves its Space only when its author shares it, as a Moment or a Post, while still a member of the Space (`403 NOT_SNAP_AUTHOR` otherwise, with `details.snapIds`; `404 SNAP_NOT_FOUND` for unknown snaps). Photos come as an **image**: `{ "snapId", "imageUrl", "thumbnailUrl", "width", "height" }`, with signed URLs. Content of deactivated users and posts hidden by an ADMIN are never shown.
+
+| Who sees… | `PUBLIC` | `FOLLOWERS`                    | `SPACE_MEMBERS` (Moments only)       |
+| --------- | -------- | ------------------------------ | ------------------------------------ |
+| a Post    | everyone | the author and their followers | —                                    |
+| a Moment  | everyone | the author and their followers | the members of the Space of its snap |
+
+### `POST /api/moments`
+
+Signed in. Body: `{ "snapId": "0196…", "audience": "FOLLOWERS" }` (`FOLLOWERS`, `SPACE_MEMBERS` or `PUBLIC`). The Moment lasts `moment_ttl_hours`. **201** with the Moment: `id`, `author`, `audience`, `image`, `expiresAt`, `createdAt`, `viewedByMe` and `viewsCount` (only for your own Moments; `null` for the others).
+
+### `GET /api/moments/feed`
+
+Signed in. The active Moments of the people you follow (that you may see) and your own, grouped by author: `[{ "author": {…}, "moments": [/* oldest first */], "hasUnseen": true }]`. Your group goes first, then the groups with something unseen, then the most recent. Expired Moments never appear.
+
+### `POST /api/moments/:id/view`
+
+Signed in. Marks the Moment as seen, once per person (the author's own views do not count). **204**. Errors: `404 MOMENT_NOT_FOUND` (unknown or expired), `403` (not shared with you).
+
+A **Post** in responses:
+
+```json
+{
+  "id": "0196…",
+  "author": { "id": "0196…", "name": "Ana Demo", "username": "ana.demo", "avatarUrl": null },
+  "caption": "Recién salido del horno.",
+  "hashtags": ["repostería", "chocolate"],
+  "visibility": "PUBLIC",
+  "media": [
+    {
+      "snapId": "0196…",
+      "imageUrl": "https://…",
+      "thumbnailUrl": "https://…",
+      "width": 1536,
+      "height": 2048,
+      "altText": "Pastel de chocolate…",
+      "order": 1
+    }
+  ],
+  "likesCount": 3,
+  "commentsCount": 1,
+  "likedByMe": false,
+  "publishedAt": "2026-11-22T15:00:00.000Z"
+}
+```
+
+### `POST /api/posts`
+
+Signed in. Body: `snapIds` (the author's snaps, in order; at most `max_snaps_per_post`), `caption`, `hashtags` (optional; stored in lowercase, without `#` and without repeats) and `visibility` (`PUBLIC` by default, or `FOLLOWERS`). The alt text of each photo comes from its CONTENT insight when it has one. **201** with the Post. Errors: `400 TOO_MANY_SNAPS` (`details.limit`), `403 NOT_SNAP_AUTHOR`, `404 SNAP_NOT_FOUND`.
+
+### `POST /api/posts/draft`
+
+Signed in. Body: `{ "snapIds": ["0196…"] }`, the author's analyzed snaps. **200** with `{ "caption", "hashtags" }`: taken from the CONTENT insights when every snap has one (no AI call), otherwise written by a short AI call (`POST_DRAFT`, `prompts/post-draft.v<N>.md`). The `default_hashtags` always come first. Errors: those of `POST /api/posts`, `409 SNAPS_NOT_ANALYZED` and the AI errors.
+
+### `GET /api/feed`
+
+Signed in. The posts of the people you follow and your own, newest first, paginated (`?cursor=&limit=`).
+
+### `GET /api/users/:username/posts`
+
+Anyone (the portfolio). The user's `PUBLIC` posts, plus the `FOLLOWERS` ones for their followers and for themselves. Newest first, paginated. Errors: `404 USER_NOT_FOUND`.
+
+### `DELETE /api/posts/:id`
+
+The author. **204** (the snaps stay in their Spaces). Errors: `404 POST_NOT_FOUND`, `403`.
+
+### `GET /api/explore?hashtag=`
+
+Anyone. `PUBLIC` posts, newest first, paginated; with `hashtag` (with or without `#`, any case), only the posts that have it.
+
+### `GET /api/explore/trending?limit=`
+
+Anyone. The hashtags of the most `PUBLIC` posts published in the last `trending_hashtags_days` days: `[{ "hashtag": "repostería", "postsCount": 12 }]`, most used first (`limit` as in pagination).

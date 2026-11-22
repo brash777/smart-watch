@@ -4,6 +4,8 @@ import type {
   analysisStatusSchema,
   documentStatusSchema,
   documentTypeSchema,
+  momentAudienceSchema,
+  postVisibilitySchema,
   spaceModeSchema,
   spaceRoleSchema,
   userRoleSchema,
@@ -18,3 +20,5 @@ export type AnalysisStatus = z.infer<typeof analysisStatusSchema>;
 export type AiTask = z.infer<typeof aiTaskSchema>;
 export type DocumentType = z.infer<typeof documentTypeSchema>;
 export type DocumentStatus = z.infer<typeof documentStatusSchema>;
+export type MomentAudience = z.infer<typeof momentAudienceSchema>;
+export type PostVisibility = z.infer<typeof postVisibilitySchema>;

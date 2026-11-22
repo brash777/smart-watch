@@ -18,6 +18,12 @@
     "description": "Maximum number of snaps selected for one Compose."
   },
   {
+    "key": "max_snaps_per_post",
+    "valueType": "NUMBER",
+    "value": 10,
+    "description": "Maximum number of snaps in one Post."
+  },
+  {
     "key": "invite_code_length",
     "valueType": "NUMBER",
     "value": 8,

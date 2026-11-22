@@ -122,6 +122,10 @@ describe('the prompt files of the AI module', () => {
         'tool_name',
       ],
     ],
+    [
+      'post-draft',
+      ['caption_tone', 'default_hashtags', 'output_language', 'snap_count', 'snaps', 'tool_name'],
+    ],
     ['retry-invalid-output', ['issues', 'tool_name']],
     ['retry-missing-tool-call', ['tool_name']],
   ];

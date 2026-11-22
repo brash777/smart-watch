@@ -38,3 +38,9 @@ export const documentTypeSchema = z.enum([
 
 /** A Document starts as a DRAFT; its author marks it FINAL. */
 export const documentStatusSchema = z.enum(['DRAFT', 'FINAL']);
+
+/** Who sees a Moment. SPACE_MEMBERS: the members of the Space of its snap. */
+export const momentAudienceSchema = z.enum(['FOLLOWERS', 'SPACE_MEMBERS', 'PUBLIC']);
+
+/** Who sees a Post. PUBLIC is the default. */
+export const postVisibilitySchema = z.enum(['PUBLIC', 'FOLLOWERS']);

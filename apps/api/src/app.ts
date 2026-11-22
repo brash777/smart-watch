@@ -23,6 +23,7 @@ import { createAiRunsRepository } from './modules/ai/ai-runs.repository';
 import { createPromptLoader } from './modules/ai/prompt-loader';
 import { createAskSpaceTask } from './modules/ai/tasks/ask-space';
 import { createComposeDocumentTask } from './modules/ai/tasks/compose-document';
+import { createPostDraftTask } from './modules/ai/tasks/post-draft';
 import { createSnapAnalysisTask } from './modules/ai/tasks/snap-analysis';
 import { createStudyMaterialTasks } from './modules/ai/tasks/study-material';
 import { createAskRepository } from './modules/ask/ask.repository';
@@ -39,6 +40,17 @@ import {
 import { createDocumentsService } from './modules/documents/documents.service';
 import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
+import { createMomentsRepository } from './modules/moments/moments.repository';
+import { createMomentsRouter } from './modules/moments/moments.routes';
+import { createMomentsService } from './modules/moments/moments.service';
+import { createPostsRepository } from './modules/posts/posts.repository';
+import {
+  createExploreRouter,
+  createFeedRouter,
+  createPortfolioRouter,
+  createPostsRouter,
+} from './modules/posts/posts.routes';
+import { createPostsService } from './modules/posts/posts.service';
 import { createSettingsRepository } from './modules/settings/settings.repository';
 import { createSettingsService } from './modules/settings/settings.service';
 import { createSnapInsightsRepository } from './modules/snap-insights/snap-insights.repository';
@@ -53,6 +65,8 @@ import { createSnapsRepository } from './modules/snaps/snaps.repository';
 import { createSnapsRouter, createSpaceSnapsRouter } from './modules/snaps/snaps.routes';
 import { createSnapsService } from './modules/snaps/snaps.service';
 import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.routes';
+import { createSnapSharing } from './modules/social/snap-sharing';
+import { createSnapSharingRepository } from './modules/social/snap-sharing.repository';
 import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
 import { createSpaceContentPermissions } from './modules/spaces/space-content-permissions';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
@@ -199,6 +213,28 @@ export function createApp({
     authenticate,
     requireSpaceRole,
   };
+  // The social layer: a snap leaves its Space only when its author shares it.
+  const snapSharing = createSnapSharing(createSnapSharingRepository(prisma));
+  const momentsService = createMomentsService({
+    repository: createMomentsRepository(prisma),
+    sharing: snapSharing,
+    settings,
+    storage,
+    avatarUrl,
+  });
+  const postsRouterDependencies = {
+    config,
+    service: createPostsService({
+      repository: createPostsRepository(prisma),
+      sharing: snapSharing,
+      draftTask: createPostDraftTask(aiTaskDependencies),
+      settings,
+      storage,
+      avatarUrl,
+    }),
+    authenticate,
+    optionalAuth,
+  };
   const askService = createAskService({
     repository: createAskRepository(prisma),
     snapInsights: snapInsightsRepository,
@@ -273,6 +309,11 @@ export function createApp({
   api.use('/spaces', createSpaceStudyRouter(studyRouterDependencies));
   api.use('/quizzes', createQuizzesRouter(studyRouterDependencies));
   api.use('/spaces', createAskRouter({ service: askService, authenticate, requireSpaceRole }));
+  api.use('/moments', createMomentsRouter({ service: momentsService, authenticate }));
+  api.use('/posts', createPostsRouter(postsRouterDependencies));
+  api.use('/feed', createFeedRouter(postsRouterDependencies));
+  api.use('/users', createPortfolioRouter(postsRouterDependencies));
+  api.use('/explore', createExploreRouter(postsRouterDependencies));
   app.use('/api', api);
 
   app.use(notFound);

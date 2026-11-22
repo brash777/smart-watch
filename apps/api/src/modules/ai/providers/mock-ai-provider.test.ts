@@ -3,6 +3,7 @@ import {
   documentDraftSchema,
   documentTypeSchema,
   flashcardDeckDraftSchema,
+  postDraftSchema,
   quizDraftSchema,
   snapInsightDataSchemas,
   type SpaceMode,
@@ -57,6 +58,7 @@ describe('MockAiProvider', () => {
     ['generate-flashcards', flashcardDeckDraftSchema],
     ['generate-quiz', quizDraftSchema],
     ['ask-space', askAnswerDraftSchema],
+    ['post-draft', postDraftSchema],
   ] as [string, z.ZodType][])('answers %s with a valid fixture', async (promptName, schema) => {
     const provider = createMockAiProvider({ model: 'test-model' });
 

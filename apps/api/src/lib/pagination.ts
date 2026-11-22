@@ -26,6 +26,11 @@ export function pageArgs({ cursor, limit }: { cursor?: string | undefined; limit
   };
 }
 
+/** A page whose items go through an async mapper (one that signs file URLs, for example). */
+export async function mapPage<T, U>(page: Page<T>, map: (item: T) => Promise<U>): Promise<Page<U>> {
+  return { items: await Promise.all(page.items.map(map)), nextCursor: page.nextCursor };
+}
+
 /** Turns the limit + 1 rows read with pageArgs() into a page. */
 export function toPage<T>(rows: T[], limit: number, cursorOf: (row: T) => string): Page<T> {
   const hasMore = rows.length > limit;

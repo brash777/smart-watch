@@ -120,7 +120,7 @@ Requires a session. **200** with the signed-in user (the `user` object of the se
 
 ## Users
 
-A **user summary** (search, followers, following) is `{ "id", "name", "username", "avatarUrl" }`. Public views of a user never include the email, the password hash or the role. `avatarUrl` stays `null` until profile photos exist.
+A **user summary** (search, followers, following, Space owners and members, snap authors) is `{ "id", "name", "username", "avatarUrl" }`. Public views of a user never include the email, the password hash or the role. `avatarUrl` is a signed URL of the square profile photo, valid for `SIGNED_URL_TTL_SECONDS`, or `null` when the user has no photo. The same applies to the signed-in user (`GET /api/auth/me`).
 
 ### `GET /api/users/:username`
 
@@ -145,6 +145,14 @@ Public profile. Public, with an optional session (`Authorization` header) for `i
 ### `PATCH /api/users/me`
 
 Requires a session. Body with at least one of `name`, `bio` and `university`; an empty `bio` or `university` clears it. **200** with the signed-in user (same shape as `GET /api/auth/me`). Errors: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`.
+
+### `PATCH /api/users/me/avatar`
+
+Requires a session. A `multipart/form-data` request with one image in the `avatar` field (at most `UPLOAD_MAX_MB`, types `UPLOAD_ALLOWED_MIME`).
+
+The photo is processed like a snap: checked by its real content, rotated according to its EXIF orientation, stripped of every metadata block (EXIF with GPS, XMP, IPTC, ICC) and stored as WebP of at most `IMAGE_MAX_SIDE_PX`, plus a square `THUMBNAIL_SIDE_PX` thumbnail, under `users/<userId>/avatars/<uuid>.webp` and `…-thumb.webp`. The previous photo is deleted. `avatarUrl` points to the square thumbnail.
+
+**200** with the signed-in user (same shape as `GET /api/auth/me`). Errors: `400 NO_FILES`, `400 TOO_MANY_FILES` (more than one file, or a file in another field), `401 UNAUTHENTICATED`, `413 FILE_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE`, `415 UNSUPPORTED_IMAGE`.
 
 ### `GET /api/users/search?q=<text>`
 
@@ -342,7 +350,7 @@ A **snap** in responses:
 
 Each photo is checked by its real content, rotated according to its EXIF orientation and stripped of every metadata block (EXIF with GPS, XMP, IPTC, ICC); it is stored as WebP of at most `IMAGE_MAX_SIDE_PX`, with a `THUMBNAIL_SIDE_PX` thumbnail, under `spaces/<spaceId>/snaps/<uuid>.webp` and `…-thumb.webp`. `takenAt` comes from the EXIF date taken, or is the upload time. If one photo fails, nothing is stored. Every new snap is `PENDING` and emits the internal `snap.created` event (the AI analysis listens to it).
 
-**201** with the list of snaps. Errors: `400 NO_FILES`, `400 TOO_MANY_FILES`, `413 FILE_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE` (declared type not allowed), `415 UNSUPPORTED_IMAGE` (the content is not an allowed image), `409 SNAP_LIMIT_REACHED` (`max_snaps_per_space` setting), `409 SPACE_ARCHIVED`.
+**201** with the list of snaps. Errors: `400 NO_FILES`, `400 TOO_MANY_FILES` (`details`: `field`, `maxFiles`), `413 FILE_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE` (declared type not allowed), `415 UNSUPPORTED_IMAGE` (the content is not an allowed image), `409 SNAP_LIMIT_REACHED` (`max_snaps_per_space` setting), `409 SPACE_ARCHIVED`.
 
 ### `GET /api/spaces/:spaceId/snaps`
 

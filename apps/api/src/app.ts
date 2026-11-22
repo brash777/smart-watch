@@ -30,6 +30,7 @@ import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.
 import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
 import { createSpacesRouter } from './modules/spaces/spaces.routes';
+import { createAvatarUrlResolver } from './modules/users/avatars';
 import { createAdminUsersRouter, createUsersRouter } from './modules/users/users.routes';
 
 export interface AppDependencies {
@@ -86,6 +87,9 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
     maxFiles: config.upload.maxFiles,
     allowedMimeTypes: config.upload.allowedMimeTypes,
   });
+  // Every user in a response carries a signed URL of their profile photo.
+  const avatarUrl = createAvatarUrlResolver(storage);
+  const usersDependencies = { config, prisma, logger, storage, images, avatarUrl, authenticate };
   const snapsRouterDependencies = {
     config,
     service: createSnapsService({
@@ -96,6 +100,7 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
       settings,
       events,
       logger,
+      avatarUrl,
     }),
     upload,
     authenticate,
@@ -105,10 +110,10 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
 
   const api = express.Router();
   api.use('/health', createHealthRouter(config));
-  api.use('/auth', createAuthRouter({ config, prisma, tokens, authenticate }));
-  api.use('/users', createUsersRouter({ config, prisma, authenticate, optionalAuth }));
-  api.use('/users', createFollowsRouter({ config, prisma, authenticate }));
-  api.use('/admin/users', createAdminUsersRouter({ config, prisma, authenticate }));
+  api.use('/auth', createAuthRouter({ config, prisma, tokens, authenticate, avatarUrl }));
+  api.use('/users', createUsersRouter({ ...usersDependencies, optionalAuth, upload }));
+  api.use('/users', createFollowsRouter({ config, prisma, authenticate, avatarUrl }));
+  api.use('/admin/users', createAdminUsersRouter(usersDependencies));
   api.use(
     '/spaces',
     createSpacesRouter({
@@ -118,11 +123,19 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
       authenticate,
       optionalAuth,
       requireSpaceRole,
+      avatarUrl,
     }),
   );
   api.use(
     '/spaces',
-    createSpaceMembersRouter({ config, prisma, authenticate, optionalAuth, requireSpaceRole }),
+    createSpaceMembersRouter({
+      config,
+      prisma,
+      authenticate,
+      optionalAuth,
+      requireSpaceRole,
+      avatarUrl,
+    }),
   );
   api.use(
     '/spaces',
@@ -133,6 +146,7 @@ export function createApp({ config, logger, prisma, storage, events }: AppDepend
       settings,
       authenticate,
       requireSpaceRole,
+      avatarUrl,
     }),
   );
   api.use('/spaces', createSpaceSnapsRouter(snapsRouterDependencies));

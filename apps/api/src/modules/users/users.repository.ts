@@ -94,6 +94,26 @@ export function createUsersRepository(prisma: PrismaClient) {
       });
     },
 
+    /**
+     * Points the user at a new profile photo and returns the key it replaced. The row lock makes
+     * concurrent uploads take turns, so each one gets (and deletes) the right previous photo.
+     */
+    replaceAvatarKey(id: string, avatarKey: string) {
+      return prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${id}::uuid FOR UPDATE`;
+        const previous = await tx.user.findUniqueOrThrow({
+          where: { id },
+          select: { avatarKey: true },
+        });
+        const user = await tx.user.update({
+          where: { id },
+          data: { avatarKey },
+          select: meUserSelect,
+        });
+        return { user, previousAvatarKey: previous.avatarKey };
+      });
+    },
+
     findForAdmin(id: string) {
       return prisma.user.findUnique({ where: { id }, select: adminUserSelect });
     },

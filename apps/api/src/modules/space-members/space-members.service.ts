@@ -1,7 +1,8 @@
 import type { SpaceMember, SpaceRole } from '@snapia/shared';
 import { AppError } from '../../lib/app-error';
-import { toPage, type Page } from '../../lib/pagination';
+import { mapPage, toPage, type Page } from '../../lib/pagination';
 import type { SpaceAccess } from '../../middlewares/require-space-role';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
 import type { UserPageQuery } from '../users/users.repository';
 import type {
@@ -10,9 +11,12 @@ import type {
   SpaceMembersRepository,
 } from './space-members.repository';
 
-function toSpaceMember(member: MemberRecord): SpaceMember {
+async function toSpaceMember(
+  member: MemberRecord,
+  avatarUrl: AvatarUrlResolver,
+): Promise<SpaceMember> {
   return {
-    user: toUserSummary(member.user),
+    user: await toUserSummary(member.user, avatarUrl),
     role: member.role,
     joinedAt: member.joinedAt.toISOString(),
   };
@@ -20,7 +24,15 @@ function toSpaceMember(member: MemberRecord): SpaceMember {
 
 const memberNotFound = () => new AppError('MEMBER_NOT_FOUND', 'This user is not a member', 404);
 
-export function createSpaceMembersService(repository: SpaceMembersRepository) {
+export interface SpaceMembersServiceDependencies {
+  repository: SpaceMembersRepository;
+  avatarUrl: AvatarUrlResolver;
+}
+
+export function createSpaceMembersService({
+  repository,
+  avatarUrl,
+}: SpaceMembersServiceDependencies) {
   async function findMember(queries: MembershipQueries, spaceId: string, userId: string) {
     const member = await queries.findMember(spaceId, userId);
     if (member === null) throw memberNotFound();
@@ -62,15 +74,17 @@ export function createSpaceMembersService(repository: SpaceMembersRepository) {
   return {
     async list(access: SpaceAccess, page: UserPageQuery): Promise<Page<SpaceMember>> {
       const rows = await repository.list(access.spaceId, page);
-      const { items, nextCursor } = toPage(rows, page.limit, ({ id }) => id);
-      return { items: items.map(toSpaceMember), nextCursor };
+      return mapPage(
+        toPage(rows, page.limit, ({ id }) => id),
+        (member) => toSpaceMember(member, avatarUrl),
+      );
     },
 
     /** OWNERs change roles. A PRIVATE Space only has OWNERs, so it cannot get other roles. */
     async changeRole(access: SpaceAccess, userId: string, role: SpaceRole): Promise<SpaceMember> {
       return repository.withSpaceLock(access.spaceId, async (queries) => {
         const member = await findMember(queries, access.spaceId, userId);
-        if (member.role === role) return toSpaceMember(member);
+        if (member.role === role) return toSpaceMember(member, avatarUrl);
         if (role !== 'OWNER') {
           if (access.visibility === 'PRIVATE') {
             throw new AppError(
@@ -82,7 +96,7 @@ export function createSpaceMembersService(repository: SpaceMembersRepository) {
           await assertNotLastOwner(queries, access.spaceId, member);
           await handOverOwnership(queries, access.spaceId, userId);
         }
-        return toSpaceMember(await queries.setRole(access.spaceId, userId, role));
+        return toSpaceMember(await queries.setRole(access.spaceId, userId, role), avatarUrl);
       });
     },
 

@@ -4,6 +4,7 @@ import { createS3StorageProvider } from './s3-storage-provider';
 import type { StorageProvider } from './storage-provider';
 
 export type { StorageProvider } from './storage-provider';
+export { deleteStoredObjects } from './delete-objects';
 
 /** The storage chosen with STORAGE_DRIVER: s3 (MinIO, AWS S3, R2) or local (a folder). */
 export function createStorageProvider(storage: Config['storage']): StorageProvider {

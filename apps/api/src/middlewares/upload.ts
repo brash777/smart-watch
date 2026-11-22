@@ -11,7 +11,13 @@ export interface ImageUploadOptions {
   allowedMimeTypes: readonly string[];
 }
 
-function toAppError(error: multer.MulterError, { maxFileSizeBytes, maxFiles }: ImageUploadOptions) {
+/** What one route accepts: the multipart field and how many files it takes. */
+interface FileField {
+  name: string;
+  maxCount: number;
+}
+
+function toAppError(error: multer.MulterError, maxFileSizeBytes: number, field: FileField) {
   switch (error.code) {
     case 'LIMIT_FILE_SIZE':
       return new AppError(
@@ -21,10 +27,12 @@ function toAppError(error: multer.MulterError, { maxFileSizeBytes, maxFiles }: I
       );
     case 'LIMIT_FILE_COUNT':
     case 'LIMIT_UNEXPECTED_FILE':
+      // Too many files, or files in another field.
       return new AppError(
         'TOO_MANY_FILES',
-        `Send at most ${String(maxFiles)} files in the expected field`,
+        `Send at most ${String(field.maxCount)} file(s), in the "${field.name}" field`,
         400,
+        { field: field.name, maxFiles: field.maxCount },
       );
     default:
       return new AppError('INVALID_UPLOAD', error.message, 400);
@@ -54,19 +62,24 @@ export function createImageUpload(options: ImageUploadOptions) {
     },
   });
 
-  function withApiErrors(handler: RequestHandler): RequestHandler {
+  function withApiErrors(handler: RequestHandler, field: FileField): RequestHandler {
     return (req, res, next) => {
       handler(req, res, (error?: unknown) => {
-        next(error instanceof multer.MulterError ? toAppError(error, options) : error);
+        next(
+          error instanceof multer.MulterError
+            ? toAppError(error, options.maxFileSizeBytes, field)
+            : error,
+        );
       });
     };
   }
 
   return {
-    /** Up to UPLOAD_MAX_FILES files in one field. */
-    files: (field: string) => withApiErrors(upload.array(field, options.maxFiles)),
-    /** Exactly one file in one field. */
-    file: (field: string) => withApiErrors(upload.single(field)),
+    /** Up to UPLOAD_MAX_FILES files in one field (req.files). */
+    files: (name: string) =>
+      withApiErrors(upload.array(name, options.maxFiles), { name, maxCount: options.maxFiles }),
+    /** At most one file in one field (req.file). */
+    file: (name: string) => withApiErrors(upload.single(name), { name, maxCount: 1 }),
   };
 }
 

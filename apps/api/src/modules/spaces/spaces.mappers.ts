@@ -4,6 +4,7 @@ import {
   type SpaceMode,
   type SpaceRole,
 } from '@snapia/shared';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
 import type { SpaceDetailRecord } from './spaces.repository';
 
@@ -18,7 +19,11 @@ function readMetadata(mode: SpaceMode, metadata: unknown): Record<string, string
   );
 }
 
-export function toSpace(space: SpaceDetailRecord, myRole: SpaceRole | null): Space {
+export async function toSpace(
+  space: SpaceDetailRecord,
+  myRole: SpaceRole | null,
+  avatarUrl: AvatarUrlResolver,
+): Promise<Space> {
   return {
     id: space.id,
     name: space.name,
@@ -30,7 +35,7 @@ export function toSpace(space: SpaceDetailRecord, myRole: SpaceRole | null): Spa
     coverSnapId: space.coverSnapId,
     archivedAt: space.archivedAt?.toISOString() ?? null,
     createdAt: space.createdAt.toISOString(),
-    owner: toUserSummary(space.owner),
+    owner: await toUserSummary(space.owner, avatarUrl),
     counts: { snaps: space._count.snaps, members: space._count.members },
     myRole,
   };

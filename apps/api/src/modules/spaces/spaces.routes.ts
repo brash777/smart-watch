@@ -3,6 +3,7 @@ import type { Config } from '../../config/env';
 import type { RequireSpaceRole } from '../../middlewares/require-space-role';
 import { validate } from '../../middlewares/validate';
 import type { SettingsService } from '../settings/settings.service';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { createSpacesController } from './spaces.controller';
 import type { SpacesRepository } from './spaces.repository';
 import { createSpacesInputs } from './spaces.schemas';
@@ -15,6 +16,7 @@ export interface SpacesRouterDependencies {
   authenticate: RequestHandler;
   optionalAuth: RequestHandler;
   requireSpaceRole: RequireSpaceRole;
+  avatarUrl: AvatarUrlResolver;
 }
 
 /** /api/spaces: create, list, read, change and archive Spaces. */
@@ -22,7 +24,11 @@ export function createSpacesRouter(deps: SpacesRouterDependencies): Router {
   const { authenticate, optionalAuth, requireSpaceRole } = deps;
   const inputs = createSpacesInputs(deps.config.pagination);
   const controller = createSpacesController(
-    createSpacesService({ repository: deps.repository, settings: deps.settings }),
+    createSpacesService({
+      repository: deps.repository,
+      settings: deps.settings,
+      avatarUrl: deps.avatarUrl,
+    }),
     inputs,
   );
 

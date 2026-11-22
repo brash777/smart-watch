@@ -12,6 +12,7 @@ import type { SpaceAccess } from '../../middlewares/require-space-role';
 import type { SettingsService } from '../settings/settings.service';
 import { toSpace } from '../spaces/spaces.mappers';
 import type { SpacesRepository } from '../spaces/spaces.repository';
+import type { AvatarUrlResolver } from '../users/avatars';
 import type { InviteRecord, SpaceInvitesRepository } from './space-invites.repository';
 
 /** Invite code characters: no I, L, O, 0 or 1, which are easy to confuse. */
@@ -69,12 +70,14 @@ export interface SpaceInvitesServiceDependencies {
   repository: SpaceInvitesRepository;
   spaces: SpacesRepository;
   settings: SettingsService;
+  avatarUrl: AvatarUrlResolver;
 }
 
 export function createSpaceInvitesService({
   repository,
   spaces,
   settings,
+  avatarUrl,
 }: SpaceInvitesServiceDependencies) {
   async function joinResult(
     spaceId: string,
@@ -83,7 +86,7 @@ export function createSpaceInvitesService({
   ): Promise<JoinSpaceResult> {
     const space = await spaces.findDetail(spaceId);
     if (space === null) throw new AppError('SPACE_NOT_FOUND', 'Space not found', 404);
-    return { space: toSpace(space, role), role, alreadyMember };
+    return { space: await toSpace(space, role, avatarUrl), role, alreadyMember };
   }
 
   return {

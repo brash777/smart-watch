@@ -15,6 +15,11 @@ export function createUsersController(service: UsersService, inputs: UsersInputs
     res.json({ data: await service.updateMe(requireAuth(req).userId, body) });
   };
 
+  /** multipart/form-data with one image in the "avatar" field. */
+  const updateAvatar: RequestHandler = async (req, res) => {
+    res.json({ data: await service.setAvatar(requireAuth(req).userId, req.file?.buffer) });
+  };
+
   const search: RequestHandler = async (_req, res) => {
     const { query } = getValidatedInput(res, inputs.search);
     const { q, ...page } = query;
@@ -38,5 +43,5 @@ export function createUsersController(service: UsersService, inputs: UsersInputs
     res.json({ data: await service.setRole(requireAuth(req).userId, params.id, body.role) });
   };
 
-  return { getProfile, updateMe, search, adminList, adminSetStatus, adminSetRole };
+  return { getProfile, updateMe, updateAvatar, search, adminList, adminSetStatus, adminSetRole };
 }

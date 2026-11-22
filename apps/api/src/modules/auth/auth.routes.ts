@@ -3,6 +3,7 @@ import type { Config } from '../../config/env';
 import type { PrismaClient } from '../../lib/prisma';
 import { createRateLimiter } from '../../middlewares/rate-limit';
 import { validate } from '../../middlewares/validate';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { createAuthController } from './auth.controller';
 import { createAuthRepository } from './auth.repository';
 import { loginInput, registerInput } from './auth.schemas';
@@ -14,6 +15,7 @@ export interface AuthRouterDependencies {
   prisma: PrismaClient;
   tokens: TokenService;
   authenticate: RequestHandler;
+  avatarUrl: AvatarUrlResolver;
 }
 
 /** /api/auth: register, login, refresh, logout and the signed-in user. */
@@ -22,11 +24,13 @@ export function createAuthRouter({
   prisma,
   tokens,
   authenticate,
+  avatarUrl,
 }: AuthRouterDependencies): Router {
   const service = createAuthService({
     repository: createAuthRepository(prisma),
     tokens,
     bcryptRounds: config.auth.bcryptRounds,
+    avatarUrl,
   });
   const controller = createAuthController(service, { secureCookies: config.isProduction });
   // Stricter limit for the routes that guess passwords or create accounts (AUTH_RATE_LIMIT_MAX).

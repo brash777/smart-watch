@@ -9,6 +9,7 @@ export const meUserSelect = {
   role: true,
   bio: true,
   university: true,
+  avatarKey: true,
   createdAt: true,
   isActive: true,
 } as const;

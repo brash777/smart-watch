@@ -2,6 +2,7 @@ import { type RequestHandler, Router } from 'express';
 import type { Config } from '../../config/env';
 import type { PrismaClient } from '../../lib/prisma';
 import { validate } from '../../middlewares/validate';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { createFollowsController } from './follows.controller';
 import { createFollowsRepository } from './follows.repository';
 import { createFollowsInputs } from './follows.schemas';
@@ -11,6 +12,7 @@ export interface FollowsRouterDependencies {
   config: Config;
   prisma: PrismaClient;
   authenticate: RequestHandler;
+  avatarUrl: AvatarUrlResolver;
 }
 
 /** Mounted on /api/users: follow, unfollow and the followers and following lists. */
@@ -18,10 +20,11 @@ export function createFollowsRouter({
   config,
   prisma,
   authenticate,
+  avatarUrl,
 }: FollowsRouterDependencies): Router {
   const inputs = createFollowsInputs(config.pagination);
   const controller = createFollowsController(
-    createFollowsService(createFollowsRepository(prisma)),
+    createFollowsService({ repository: createFollowsRepository(prisma), avatarUrl }),
     inputs,
   );
 

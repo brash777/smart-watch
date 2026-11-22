@@ -226,7 +226,7 @@ Every guide shows a visible notice, in the app and in every export, saying that 
 
 ### Photos
 
-EXIF metadata, including the GPS location, is removed from every photo at upload, before the photo is stored.
+EXIF metadata, including the GPS location, is removed from every photo at upload (snaps and profile photos), before the photo is stored.
 
 ### Space visibility
 

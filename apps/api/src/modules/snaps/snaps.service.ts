@@ -3,8 +3,8 @@ import type { Logger } from 'pino';
 import { AppError } from '../../lib/app-error';
 import type { EventBus } from '../../lib/events';
 import { PROCESSED_IMAGE_MIME_TYPE, type ImageProcessor } from '../../lib/images/image-processor';
-import { toPage, type Page } from '../../lib/pagination';
-import type { StorageProvider } from '../../lib/storage';
+import { mapPage, toPage, type Page } from '../../lib/pagination';
+import { deleteStoredObjects, type StorageProvider } from '../../lib/storage';
 import {
   effectiveSpaceRole,
   hasSpaceRole,
@@ -12,6 +12,7 @@ import {
 } from '../../middlewares/require-space-role';
 import type { SettingsService } from '../settings/settings.service';
 import type { SpacesRepository } from '../spaces/spaces.repository';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { newSnapStorageKeys } from './snap-storage-keys';
 import { toSnap, toSnapDetail } from './snaps.mappers';
 import type { NewSnap, SnapFilters, SnapRecord, SnapsRepository } from './snaps.repository';
@@ -24,6 +25,7 @@ export interface SnapsServiceDependencies {
   settings: SettingsService;
   events: EventBus;
   logger: Logger;
+  avatarUrl: AvatarUrlResolver;
 }
 
 export interface SnapUploadFields {
@@ -32,19 +34,14 @@ export interface SnapUploadFields {
 }
 
 export function createSnapsService(deps: SnapsServiceDependencies) {
-  const { repository, storage } = deps;
+  const { repository, storage, avatarUrl } = deps;
 
-  /** Deletes storage objects; a failure only leaves an orphan file, so it is logged, not thrown. */
-  async function deleteObjects(keys: readonly string[]): Promise<void> {
-    const results = await Promise.allSettled(keys.map((key) => storage.delete(key)));
-    results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        deps.logger.warn(
-          { err: result.reason, key: keys[index] },
-          'Could not delete a stored file',
-        );
-      }
-    });
+  function deleteObjects(keys: readonly string[]): Promise<void> {
+    return deleteStoredObjects(storage, keys, deps.logger);
+  }
+
+  function present(snap: SnapRecord): Promise<Snap> {
+    return toSnap(snap, storage, avatarUrl);
   }
 
   /** The snap and the caller's role in its Space, checked like requireSpaceRole('VIEWER'). */
@@ -136,24 +133,26 @@ export function createSnapsService(deps: SnapsServiceDependencies) {
       }
 
       for (const snap of created) deps.events.emit('snap.created', { snapId: snap.id });
-      return Promise.all(created.map((snap) => toSnap(snap, storage)));
+      return Promise.all(created.map(present));
     },
 
     async list(access: SpaceAccess, filters: SnapFilters): Promise<Page<Snap>> {
       const rows = await repository.listInSpace(access.spaceId, filters);
-      const { items, nextCursor } = toPage(rows, filters.limit, ({ id }) => id);
-      return { items: await Promise.all(items.map((snap) => toSnap(snap, storage))), nextCursor };
+      return mapPage(
+        toPage(rows, filters.limit, ({ id }) => id),
+        present,
+      );
     },
 
     async get(snapId: string, userId: string | undefined): Promise<SnapDetail> {
       const { snap } = await findSnapForUser(snapId, userId);
-      return toSnapDetail(snap, storage);
+      return toSnapDetail(snap, storage, avatarUrl);
     },
 
     async update(snapId: string, userId: string, body: UpdateSnapBody): Promise<Snap> {
       const { snap, memberRole } = await findSnapForUser(snapId, userId);
       assertCanModify(snap, userId, memberRole);
-      return toSnap(await repository.update(snap.id, body), storage);
+      return present(await repository.update(snap.id, body));
     },
 
     /** Deletes the snap from the database, then its files from storage. */

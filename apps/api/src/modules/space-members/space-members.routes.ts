@@ -3,6 +3,7 @@ import type { Config } from '../../config/env';
 import type { PrismaClient } from '../../lib/prisma';
 import type { RequireSpaceRole } from '../../middlewares/require-space-role';
 import { validate } from '../../middlewares/validate';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { createSpaceMembersController } from './space-members.controller';
 import { createSpaceMembersRepository } from './space-members.repository';
 import { createSpaceMembersInputs } from './space-members.schemas';
@@ -14,6 +15,7 @@ export interface SpaceMembersRouterDependencies {
   authenticate: RequestHandler;
   optionalAuth: RequestHandler;
   requireSpaceRole: RequireSpaceRole;
+  avatarUrl: AvatarUrlResolver;
 }
 
 /** Mounted on /api/spaces: list, change and remove members, and leave a Space. */
@@ -21,7 +23,10 @@ export function createSpaceMembersRouter(deps: SpaceMembersRouterDependencies): 
   const { authenticate, optionalAuth, requireSpaceRole } = deps;
   const inputs = createSpaceMembersInputs(deps.config.pagination);
   const controller = createSpaceMembersController(
-    createSpaceMembersService(createSpaceMembersRepository(deps.prisma)),
+    createSpaceMembersService({
+      repository: createSpaceMembersRepository(deps.prisma),
+      avatarUrl: deps.avatarUrl,
+    }),
     inputs,
   );
 

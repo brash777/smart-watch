@@ -1,11 +1,17 @@
 import type { FollowState, UserSummary } from '@snapia/shared';
 import { AppError } from '../../lib/app-error';
-import { toPage, type Page } from '../../lib/pagination';
+import { mapPage, toPage, type Page } from '../../lib/pagination';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
 import type { UserPageQuery } from '../users/users.repository';
 import type { FollowsRepository } from './follows.repository';
 
-export function createFollowsService(repository: FollowsRepository) {
+export interface FollowsServiceDependencies {
+  repository: FollowsRepository;
+  avatarUrl: AvatarUrlResolver;
+}
+
+export function createFollowsService({ repository, avatarUrl }: FollowsServiceDependencies) {
   /** The active user behind a username (404 otherwise). */
   async function findUserId(username: string): Promise<string> {
     const user = await repository.findActiveUserId(username);
@@ -39,14 +45,18 @@ export function createFollowsService(repository: FollowsRepository) {
 
     async listFollowers(username: string, page: UserPageQuery): Promise<Page<UserSummary>> {
       const rows = await repository.listFollowers(await findUserId(username), page);
-      const { items, nextCursor } = toPage(rows, page.limit, ({ id }) => id);
-      return { items: items.map(({ follower }) => toUserSummary(follower)), nextCursor };
+      return mapPage(
+        toPage(rows, page.limit, ({ id }) => id),
+        ({ follower }) => toUserSummary(follower, avatarUrl),
+      );
     },
 
     async listFollowing(username: string, page: UserPageQuery): Promise<Page<UserSummary>> {
       const rows = await repository.listFollowing(await findUserId(username), page);
-      const { items, nextCursor } = toPage(rows, page.limit, ({ id }) => id);
-      return { items: items.map(({ following }) => toUserSummary(following)), nextCursor };
+      return mapPage(
+        toPage(rows, page.limit, ({ id }) => id),
+        ({ following }) => toUserSummary(following, avatarUrl),
+      );
     },
   };
 }

@@ -6,6 +6,7 @@ import type { RequireSpaceRole } from '../../middlewares/require-space-role';
 import { validate } from '../../middlewares/validate';
 import type { SettingsService } from '../settings/settings.service';
 import type { SpacesRepository } from '../spaces/spaces.repository';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { createSpaceInvitesController } from './space-invites.controller';
 import { createSpaceInvitesRepository } from './space-invites.repository';
 import { createInviteInput, joinSpaceInput, revokeInviteInput } from './space-invites.schemas';
@@ -18,6 +19,7 @@ export interface SpaceInvitesRouterDependencies {
   settings: SettingsService;
   authenticate: RequestHandler;
   requireSpaceRole: RequireSpaceRole;
+  avatarUrl: AvatarUrlResolver;
 }
 
 /** Mounted on /api/spaces: invite codes of a Space and joining with a code. */
@@ -28,6 +30,7 @@ export function createSpaceInvitesRouter(deps: SpaceInvitesRouterDependencies): 
       repository: createSpaceInvitesRepository(deps.prisma),
       spaces: deps.spaces,
       settings: deps.settings,
+      avatarUrl: deps.avatarUrl,
     }),
   );
   // Joining tries a secret code, so it shares the stricter AUTH_RATE_LIMIT_MAX limit.

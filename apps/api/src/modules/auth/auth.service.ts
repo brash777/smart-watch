@@ -3,6 +3,7 @@ import type { AuthSession, LoginBody, MeUser, RegisterBody } from '@snapia/share
 import { AppError } from '../../lib/app-error';
 import { hashPassword, verifyPassword } from '../../lib/password';
 import { isUniqueConstraintError } from '../../lib/prisma';
+import type { AvatarUrlResolver } from '../users/avatars';
 import type { AuthRepository, MeUserRecord } from './auth.repository';
 import type { IssuedRefreshToken, TokenService } from './auth.tokens';
 
@@ -16,12 +17,14 @@ export interface AuthServiceDependencies {
   repository: AuthRepository;
   tokens: TokenService;
   bcryptRounds: number;
+  avatarUrl: AvatarUrlResolver;
 }
 
 const invalidRefreshToken = () =>
   new AppError('INVALID_REFRESH_TOKEN', 'The session expired, sign in again', 401);
 
-export function toMeUser(user: MeUserRecord): MeUser {
+/** The signed-in user, with a signed URL of their square profile photo (or null). */
+export async function toMeUser(user: MeUserRecord, avatarUrl: AvatarUrlResolver): Promise<MeUser> {
   return {
     id: user.id,
     name: user.name,
@@ -30,13 +33,17 @@ export function toMeUser(user: MeUserRecord): MeUser {
     role: user.role,
     bio: user.bio,
     university: user.university,
-    // Profile photos arrive with file storage; until a user uploads one there is no URL.
-    avatarUrl: null,
+    avatarUrl: await avatarUrl(user.avatarKey),
     createdAt: user.createdAt.toISOString(),
   };
 }
 
-export function createAuthService({ repository, tokens, bcryptRounds }: AuthServiceDependencies) {
+export function createAuthService({
+  repository,
+  tokens,
+  bcryptRounds,
+  avatarUrl,
+}: AuthServiceDependencies) {
   let dummyPasswordHash: Promise<string> | undefined;
 
   /** Compares against a throwaway hash so unknown accounts take as long as wrong passwords. */
@@ -57,7 +64,7 @@ export function createAuthService({ repository, tokens, bcryptRounds }: AuthServ
         accessToken: await tokens.signAccessToken(user.id),
         tokenType: 'Bearer',
         expiresIn: tokens.accessTokenTtlSeconds,
-        user: toMeUser(user),
+        user: await toMeUser(user, avatarUrl),
       },
       refreshToken,
     };
@@ -136,7 +143,7 @@ export function createAuthService({ repository, tokens, bcryptRounds }: AuthServ
     async getMe(userId: string): Promise<MeUser> {
       const user = await repository.findUserById(userId);
       if (user === null) throw new AppError('UNAUTHENTICATED', 'Sign in to continue', 401);
-      return toMeUser(user);
+      return toMeUser(user, avatarUrl);
     },
 
     /** Revokes the refresh token of this session, if any. Always succeeds. */

@@ -1,14 +1,19 @@
 import type { Snap, SnapDetail } from '@snapia/shared';
 import type { StorageProvider } from '../../lib/storage';
+import type { AvatarUrlResolver } from '../users/avatars';
 import { toUserSummary } from '../users/users.mappers';
 import type { SnapRecord } from './snaps.repository';
 
 /** A snap with a signed URL of its thumbnail (valid for SIGNED_URL_TTL_SECONDS). */
-export async function toSnap(snap: SnapRecord, storage: StorageProvider): Promise<Snap> {
+export async function toSnap(
+  snap: SnapRecord,
+  storage: StorageProvider,
+  avatarUrl: AvatarUrlResolver,
+): Promise<Snap> {
   return {
     id: snap.id,
     spaceId: snap.spaceId,
-    author: toUserSummary(snap.author),
+    author: await toUserSummary(snap.author, avatarUrl),
     note: snap.note,
     tags: snap.tags,
     takenAt: snap.takenAt.toISOString(),
@@ -26,9 +31,10 @@ export async function toSnap(snap: SnapRecord, storage: StorageProvider): Promis
 export async function toSnapDetail(
   snap: SnapRecord,
   storage: StorageProvider,
+  avatarUrl: AvatarUrlResolver,
 ): Promise<SnapDetail> {
   return {
-    ...(await toSnap(snap, storage)),
+    ...(await toSnap(snap, storage, avatarUrl)),
     imageUrl: await storage.getSignedUrl(snap.storageKey),
   };
 }

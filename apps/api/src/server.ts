@@ -1,8 +1,10 @@
 import { createApp } from './app';
 import { EnvValidationError, type Config } from './config/env';
 import { loadConfig } from './config/load-config';
+import { EventBus } from './lib/events';
 import { createLogger } from './lib/logger';
 import { disconnectPrisma, getPrisma } from './lib/prisma';
+import { createStorageProvider } from './lib/storage';
 
 /** Loads and validates the configuration; on any problem, explains it and stops. */
 function readConfig(): Config {
@@ -22,7 +24,9 @@ function readConfig(): Config {
 const config = readConfig();
 const logger = createLogger(config);
 const prisma = getPrisma(config.database.url);
-const app = createApp({ config, logger, prisma });
+const storage = createStorageProvider(config.storage);
+const events = new EventBus(logger);
+const app = createApp({ config, logger, prisma, storage, events });
 
 const server = app.listen(config.http.port);
 

@@ -305,3 +305,57 @@ Requires a session; limited like login (`AUTH_RATE_LIMIT_MAX`). Body: `{ "code":
 ```
 
 (`space` is the full Space.) A member who enters a code again gets `alreadyMember: true`, keeps their role and spends no use. Errors: `404 INVITE_NOT_FOUND`, `410 INVITE_REVOKED`, `410 INVITE_EXPIRED`, `410 INVITE_USED_UP`, `409 SPACE_ARCHIVED`, `409 SPACE_IS_PRIVATE`.
+
+## Snaps
+
+A **snap** in responses:
+
+```json
+{
+  "id": "0196…",
+  "spaceId": "0196…",
+  "author": { "id": "0196…", "name": "Leo Demo", "username": "leo.demo", "avatarUrl": null },
+  "note": "Clase 3",
+  "tags": ["pizarra", "examen"],
+  "takenAt": "2024-05-01T10:30:00.000Z",
+  "width": 1536,
+  "height": 2048,
+  "sizeBytes": 183402,
+  "mimeType": "image/webp",
+  "analysisStatus": "PENDING",
+  "thumbnailUrl": "https://…signed…",
+  "createdAt": "2026-11-21T18:00:00.000Z"
+}
+```
+
+`thumbnailUrl` (and `imageUrl` in `GET /api/snaps/:id`) are signed URLs valid for `SIGNED_URL_TTL_SECONDS`; ask the API again for fresh ones. Tags are lowercased and never repeated.
+
+### `POST /api/spaces/:spaceId/snaps`
+
+`EDITOR` or `OWNER`. A `multipart/form-data` request:
+
+| Field   | Content                                                                                                     |
+| ------- | ----------------------------------------------------------------------------------------------------------- |
+| `files` | One or more photos (at most `UPLOAD_MAX_FILES`, each at most `UPLOAD_MAX_MB`, types `UPLOAD_ALLOWED_MIME`). |
+| `note`  | Optional text for every photo of the upload.                                                                |
+| `tags`  | Optional: comma-separated (`pizarra, examen`) or the field repeated.                                        |
+
+Each photo is checked by its real content, rotated according to its EXIF orientation and stripped of every metadata block (EXIF with GPS, XMP, IPTC, ICC); it is stored as WebP of at most `IMAGE_MAX_SIDE_PX`, with a `THUMBNAIL_SIDE_PX` thumbnail, under `spaces/<spaceId>/snaps/<uuid>.webp` and `…-thumb.webp`. `takenAt` comes from the EXIF date taken, or is the upload time. If one photo fails, nothing is stored. Every new snap is `PENDING` and emits the internal `snap.created` event (the AI analysis listens to it).
+
+**201** with the list of snaps. Errors: `400 NO_FILES`, `400 TOO_MANY_FILES`, `413 FILE_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE` (declared type not allowed), `415 UNSUPPORTED_IMAGE` (the content is not an allowed image), `409 SNAP_LIMIT_REACHED` (`max_snaps_per_space` setting), `409 SPACE_ARCHIVED`.
+
+### `GET /api/spaces/:spaceId/snaps`
+
+`VIEWER` (or anyone, for a `PUBLIC` Space). Most recently taken first, paginated. Filters: `tag`, `authorId`, `from` and `to` (dates, on `takenAt`) and `analysisStatus` (`PENDING`, `PROCESSING`, `DONE`, `FAILED`).
+
+### `GET /api/snaps/:id`
+
+Anyone who can see the snap's Space. **200** with the snap plus `imageUrl`. Errors: `404 SNAP_NOT_FOUND`, `401`, `403`.
+
+### `PATCH /api/snaps/:id`
+
+The author (while `EDITOR` or `OWNER` of the Space) or an `OWNER`. Body with `note` (empty to clear it) and/or `tags` (an array). **200** with the snap.
+
+### `DELETE /api/snaps/:id`
+
+Same permission as `PATCH`. Deletes the snap and its files from storage. **204**.

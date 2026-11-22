@@ -5,13 +5,17 @@ import helmet from 'helmet';
 import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 import type { Config } from './config/env';
+import type { EventBus } from './lib/events';
+import { createImageProcessor } from './lib/images/image-processor';
 import type { PrismaClient } from './lib/prisma';
+import type { StorageProvider } from './lib/storage';
 import { createAuthMiddlewares } from './middlewares/authenticate';
 import { createErrorHandler } from './middlewares/error-handler';
 import { notFound } from './middlewares/not-found';
 import { createRateLimiter } from './middlewares/rate-limit';
 import { createRequireSpaceRole } from './middlewares/require-space-role';
 import { requestId } from './middlewares/request-id';
+import { createImageUpload } from './middlewares/upload';
 import { createAuthRepository } from './modules/auth/auth.repository';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createTokenService } from './modules/auth/auth.tokens';
@@ -19,6 +23,9 @@ import { createFollowsRouter } from './modules/follows/follows.routes';
 import { createHealthRouter } from './modules/health/health.routes';
 import { createSettingsRepository } from './modules/settings/settings.repository';
 import { createSettingsService } from './modules/settings/settings.service';
+import { createSnapsRepository } from './modules/snaps/snaps.repository';
+import { createSnapsRouter, createSpaceSnapsRouter } from './modules/snaps/snaps.routes';
+import { createSnapsService } from './modules/snaps/snaps.service';
 import { createSpaceInvitesRouter } from './modules/space-invites/space-invites.routes';
 import { createSpaceMembersRouter } from './modules/space-members/space-members.routes';
 import { createSpacesRepository } from './modules/spaces/spaces.repository';
@@ -29,10 +36,14 @@ export interface AppDependencies {
   config: Config;
   logger: Logger;
   prisma: PrismaClient;
+  /** Where photos are stored (STORAGE_DRIVER). */
+  storage: StorageProvider;
+  /** In-process events, such as snap.created. */
+  events: EventBus;
 }
 
 /** Builds the Express application without listening, so tests can use it directly. */
-export function createApp({ config, logger, prisma }: AppDependencies): Express {
+export function createApp({ config, logger, prisma, storage, events }: AppDependencies): Express {
   const app = express();
   app.disable('x-powered-by');
 
@@ -65,6 +76,32 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
   const requireSpaceRole = createRequireSpaceRole((spaceId, userId) =>
     spacesRepository.findAccess(spaceId, userId),
   );
+  const images = createImageProcessor({
+    maxSidePx: config.upload.imageMaxSidePx,
+    thumbnailSidePx: config.upload.thumbnailSidePx,
+    allowedMimeTypes: config.upload.allowedMimeTypes,
+  });
+  const upload = createImageUpload({
+    maxFileSizeBytes: config.upload.maxFileSizeBytes,
+    maxFiles: config.upload.maxFiles,
+    allowedMimeTypes: config.upload.allowedMimeTypes,
+  });
+  const snapsRouterDependencies = {
+    config,
+    service: createSnapsService({
+      repository: createSnapsRepository(prisma),
+      spaces: spacesRepository,
+      storage,
+      images,
+      settings,
+      events,
+      logger,
+    }),
+    upload,
+    authenticate,
+    optionalAuth,
+    requireSpaceRole,
+  };
 
   const api = express.Router();
   api.use('/health', createHealthRouter(config));
@@ -98,6 +135,8 @@ export function createApp({ config, logger, prisma }: AppDependencies): Express 
       requireSpaceRole,
     }),
   );
+  api.use('/spaces', createSpaceSnapsRouter(snapsRouterDependencies));
+  api.use('/snaps', createSnapsRouter(snapsRouterDependencies));
   app.use('/api', api);
 
   app.use(notFound);

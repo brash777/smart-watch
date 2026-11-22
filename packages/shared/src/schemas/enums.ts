@@ -11,3 +11,6 @@ export const spaceRoleSchema = z.enum(['OWNER', 'EDITOR', 'VIEWER']);
 
 /** Who can see a Space and its snaps. Spaces are PRIVATE by default. */
 export const visibilitySchema = z.enum(['PRIVATE', 'MEMBERS', 'PUBLIC']);
+
+/** Where the AI analysis of a snap is. New snaps start PENDING. */
+export const analysisStatusSchema = z.enum(['PENDING', 'PROCESSING', 'DONE', 'FAILED']);

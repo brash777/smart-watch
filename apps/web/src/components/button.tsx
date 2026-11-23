@@ -1,15 +1,18 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { buttonClassName, type ButtonStyle } from './button-styles';
 
-/** The main action of a screen, as wide as its form. */
+/** The main action of a screen (primary), a secondary one or a destructive one. */
 export function Button({
+  variant,
+  fullWidth,
   className = '',
   type = 'button',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & ButtonStyle) {
   return (
     <button
       type={type}
-      className={`inline-flex min-h-12 w-full items-center justify-center rounded-control bg-ink px-4 font-semibold text-on-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`${buttonClassName({ variant, fullWidth })} ${className}`}
       {...props}
     />
   );

@@ -17,6 +17,7 @@ import { createRequireSpaceRole } from './middlewares/require-space-role';
 import { requestId } from './middlewares/request-id';
 import { createImageUpload } from './middlewares/upload';
 import { createAiQueue, type AiQueue } from './modules/ai/ai-queue';
+import { createAppConfigRouter } from './modules/app-config/app-config.routes';
 import type { AiProvider } from './modules/ai/ai-provider';
 import { createAiRunner } from './modules/ai/ai-runner';
 import { createAiRunsRepository } from './modules/ai/ai-runs.repository';
@@ -294,6 +295,7 @@ export function createApp({
 
   const api = express.Router();
   api.use('/health', createHealthRouter(config));
+  api.use('/app-config', createAppConfigRouter({ config, settings }));
   api.use('/auth', createAuthRouter({ config, prisma, tokens, authenticate, avatarUrl }));
   api.use('/users', createUsersRouter({ ...usersDependencies, optionalAuth, upload }));
   api.use('/users', createFollowsRouter({ config, prisma, authenticate, avatarUrl }));

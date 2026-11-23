@@ -2,19 +2,22 @@ import { useId, type InputHTMLAttributes, type Ref } from 'react';
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
+  /** Shown after the label, e.g. "opcional". */
+  hint?: string | undefined;
   /** Translated message shown under the field and linked to it. */
   error?: string | undefined;
   ref?: Ref<HTMLInputElement>;
 }
 
 /** A labelled input whose error is announced with it (aria-describedby). */
-export function TextField({ label, error, ref, className = '', ...input }: TextFieldProps) {
+export function TextField({ label, hint, error, ref, className = '', ...input }: TextFieldProps) {
   const id = useId();
   const errorId = `${id}-error`;
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
+        {hint === undefined ? null : <span className="font-normal text-muted"> ({hint})</span>}
       </label>
       <input
         id={id}

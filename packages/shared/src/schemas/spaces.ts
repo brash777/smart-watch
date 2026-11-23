@@ -10,7 +10,8 @@ export const hexColorSchema = z
   .regex(/^#[0-9A-Fa-f]{6}$/, 'expected a hex color such as #1A2B3C')
   .toUpperCase();
 
-const spaceNameSchema = z.string().trim().min(1, 'is required');
+/** The name of a Space: trimmed and never empty. */
+export const spaceNameSchema = z.string().trim().min(1, 'is required');
 
 /** Text that can be cleared: an empty string becomes null. */
 const clearableText = z

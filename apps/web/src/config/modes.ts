@@ -1,10 +1,19 @@
-import type { SpaceMode } from '@snapia/shared';
+import type {
+  ContentSpaceMetadata,
+  SpaceMode,
+  StudySpaceMetadata,
+  WorkSpaceMetadata,
+} from '@snapia/shared';
 import { BookOpen, HardHat, Palette, type LucideIcon } from 'lucide-react';
 
 /*
  * The one place where a Space mode gets its look: components read from here and never switch
  * on the mode to pick a color or an icon. The color tokens live in src/styles/tokens.css.
  */
+
+/** The metadata fields of every mode (docs/PRODUCT.md, "Space modes"). */
+export type SpaceMetadataField =
+  keyof StudySpaceMetadata | keyof WorkSpaceMetadata | keyof ContentSpaceMetadata;
 
 export interface ModeStyle {
   icon: LucideIcon;
@@ -16,6 +25,8 @@ export interface ModeStyle {
   borderClass: string;
   /** For SVG fills and strokes. */
   cssColor: string;
+  /** The metadata a Space of this mode can have, in the order the forms show it. */
+  metadataFields: readonly SpaceMetadataField[];
 }
 
 export const modes: Record<SpaceMode, ModeStyle> = {
@@ -27,6 +38,7 @@ export const modes: Record<SpaceMode, ModeStyle> = {
     bgClass: 'bg-mode-study',
     borderClass: 'border-mode-study',
     cssColor: 'var(--mode-study)',
+    metadataFields: ['subject', 'professor', 'semester'] satisfies (keyof StudySpaceMetadata)[],
   },
   WORK: {
     icon: HardHat,
@@ -36,6 +48,7 @@ export const modes: Record<SpaceMode, ModeStyle> = {
     bgClass: 'bg-mode-work',
     borderClass: 'border-mode-work',
     cssColor: 'var(--mode-work)',
+    metadataFields: ['project', 'client', 'siteLabel'] satisfies (keyof WorkSpaceMetadata)[],
   },
   CONTENT: {
     icon: Palette,
@@ -45,6 +58,7 @@ export const modes: Record<SpaceMode, ModeStyle> = {
     bgClass: 'bg-mode-content',
     borderClass: 'border-mode-content',
     cssColor: 'var(--mode-content)',
+    metadataFields: ['niche'] satisfies (keyof ContentSpaceMetadata)[],
   },
 };
 

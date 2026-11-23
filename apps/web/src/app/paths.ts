@@ -1,8 +1,18 @@
-/** The routes of the web app. */
+/** The routes of the web app. Functions build the paths that carry an id. */
 export const paths = {
   home: '/',
   spaces: '/spaces',
+  newSpace: '/spaces/new',
+  space: (spaceId: string) => `/spaces/${spaceId}`,
+  spaceDocuments: (spaceId: string) => `/spaces/${spaceId}/documents`,
+  spaceStudy: (spaceId: string) => `/spaces/${spaceId}/study`,
+  spaceMembers: (spaceId: string) => `/spaces/${spaceId}/members`,
+  snap: (spaceId: string, snapId: string) => `/spaces/${spaceId}/snaps/${snapId}`,
+  /** The page to join a Space, with the invite code already filled in when there is one. */
+  join: (code?: string) => (code === undefined ? '/join' : `/join/${code}`),
   capture: '/capture',
+  /** The camera with a Space already chosen. */
+  captureIn: (spaceId: string) => `/capture?space=${encodeURIComponent(spaceId)}`,
   explore: '/explore',
   profile: '/profile',
   login: '/login',

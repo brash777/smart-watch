@@ -51,6 +51,34 @@ Liveness check. Public: no authentication.
 | `uptime`  | Seconds since the API process started. |
 | `version` | Version in `apps/api/package.json`.    |
 
+## App configuration
+
+### `GET /api/app-config`
+
+Public. What the web app needs before it creates a Space or uploads photos, so it never keeps its own copy of these values.
+
+```json
+{
+  "data": {
+    "spaces": { "colorPalette": ["#4F46E5", "#0EA5E9"] },
+    "uploads": {
+      "maxFiles": 10,
+      "maxFileSizeBytes": 15728640,
+      "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp"],
+      "imageMaxSidePx": 2048
+    }
+  }
+}
+```
+
+| Field                      | Source                                                                      |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `spaces.colorPalette`      | The `space_color_palette` setting: the colors `POST /api/spaces` accepts.   |
+| `uploads.maxFiles`         | `UPLOAD_MAX_FILES`.                                                         |
+| `uploads.maxFileSizeBytes` | `UPLOAD_MAX_MB`, in bytes.                                                  |
+| `uploads.allowedMimeTypes` | `UPLOAD_ALLOWED_MIME`.                                                      |
+| `uploads.imageMaxSidePx`   | `IMAGE_MAX_SIDE_PX`: the web app scales photos down to it before uploading. |
+
 ## Auth
 
 A session has two tokens:

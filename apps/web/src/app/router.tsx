@@ -4,9 +4,16 @@ import { RequireAuth } from '../features/auth/components/require-auth';
 import { LoginPage } from '../features/auth/pages/login-page';
 import { RegisterPage } from '../features/auth/pages/register-page';
 import { CapturePage } from '../features/capture/pages/capture-page';
+import { SpaceDocumentsTab } from '../features/documents/pages/space-documents-tab';
 import { ExplorePage } from '../features/explore/pages/explore-page';
 import { HomePage } from '../features/home/pages/home-page';
 import { ProfilePage } from '../features/profile/pages/profile-page';
+import { SpaceSnapsTab } from '../features/snaps/pages/space-snaps-tab';
+import { CreateSpacePage } from '../features/spaces/pages/create-space-page';
+import { JoinSpacePage } from '../features/spaces/pages/join-space-page';
+import { SpaceMembersTab } from '../features/spaces/pages/space-members-tab';
+import { SpacePage } from '../features/spaces/pages/space-page';
+import { SpaceStudyTab } from '../features/spaces/pages/space-study-tab';
 import { SpacesPage } from '../features/spaces/pages/spaces-page';
 import { AppLayout } from './layouts/app-layout';
 import { NotFoundPage } from './not-found-page';
@@ -28,10 +35,30 @@ export const routes: RouteObject[] = [
         children: [
           { path: paths.home, element: <HomePage /> },
           { path: paths.spaces, element: <SpacesPage /> },
+          { path: paths.newSpace, element: <CreateSpacePage /> },
+          {
+            path: paths.space(':spaceId'),
+            element: <SpacePage />,
+            children: [
+              { index: true, element: <SpaceSnapsTab /> },
+              { path: 'documents', element: <SpaceDocumentsTab /> },
+              { path: 'study', element: <SpaceStudyTab /> },
+              { path: 'members', element: <SpaceMembersTab /> },
+            ],
+          },
+          { path: paths.join(), element: <JoinSpacePage /> },
+          { path: paths.join(':code'), element: <JoinSpacePage /> },
           { path: paths.capture, element: <CapturePage /> },
           { path: paths.explore, element: <ExplorePage /> },
           { path: paths.profile, element: <ProfilePage /> },
         ],
+      },
+      // Full screen, without the navigation bars. Loaded on demand (it renders Markdown).
+      {
+        path: paths.snap(':spaceId', ':snapId'),
+        lazy: async () => ({
+          Component: (await import('../features/snaps/pages/snap-viewer-page')).SnapViewerPage,
+        }),
       },
     ],
   },

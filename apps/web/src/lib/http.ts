@@ -86,13 +86,22 @@ async function readBody(response: Response): Promise<unknown> {
   }
 }
 
-function toApiError(response: Response, body: unknown): ApiError {
+function toApiError({ status }: { status: number }, body: unknown): ApiError {
   const parsed = errorBodySchema.safeParse(body);
   if (!parsed.success) {
-    return new ApiError(response.status, 'UNKNOWN_ERROR', `HTTP ${String(response.status)}`);
+    return new ApiError(status, 'UNKNOWN_ERROR', `HTTP ${String(status)}`);
   }
   const { code, message, details } = parsed.data.error;
-  return new ApiError(response.status, code, message, details ?? null);
+  return new ApiError(status, code, message, details ?? null);
+}
+
+function parseJson(text: string): unknown {
+  if (text === '') return null;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -142,4 +151,48 @@ export async function apiRequest<T>(
 export async function apiSend(path: string, options: RequestOptions = {}): Promise<void> {
   const response = await sendWithRefresh(path, options);
   if (!response.ok) throw toApiError(response, await readBody(response));
+}
+
+export interface UploadOptions {
+  /** Bytes sent so far and in total: fetch cannot report this, so uploads use XMLHttpRequest. */
+  onProgress?: (sent: number, total: number) => void;
+}
+
+function sendForm(
+  path: string,
+  form: FormData,
+  { onProgress }: UploadOptions,
+): Promise<{ status: number; body: unknown }> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('POST', `${env.apiUrl}${path}`);
+    request.withCredentials = true;
+    request.setRequestHeader('Accept', 'application/json');
+    if (accessToken !== null) request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+    request.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) onProgress?.(event.loaded, event.total);
+    });
+    request.addEventListener('load', () => {
+      resolve({ status: request.status, body: parseJson(request.responseText) });
+    });
+    request.addEventListener('error', () => {
+      reject(new ApiError(0, 'NETWORK_ERROR', 'The API could not be reached'));
+    });
+    request.send(form);
+  });
+}
+
+/** A multipart upload with progress; refreshes the session once on 401, like apiRequest. */
+export async function apiUpload<T>(
+  path: string,
+  form: FormData,
+  schema: z.ZodType<T>,
+  options: UploadOptions = {},
+): Promise<T> {
+  let response = await sendForm(path, form, options);
+  if (response.status === 401 && (await refreshSession()) !== null) {
+    response = await sendForm(path, form, options);
+  }
+  if (response.status < 200 || response.status >= 300) throw toApiError(response, response.body);
+  return z.object({ data: schema }).parse(response.body).data;
 }

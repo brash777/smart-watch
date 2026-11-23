@@ -4,6 +4,13 @@
     "loading": "Cargando…",
     "description": "Toma fotos rápidas y la IA las convierte en apuntes, informes y contenido."
   },
+  "common": {
+    "retry": "Reintentar",
+    "loadMore": "Ver más",
+    "loadingMore": "Cargando…",
+    "optional": "opcional",
+    "username": "@{{username}}"
+  },
   "nav": {
     "label": "Navegación principal",
     "home": "Inicio",
@@ -15,16 +22,30 @@
   "modes": {
     "STUDY": {
       "label": "Estudio",
-      "description": "Pizarras, diapositivas y cuadernos que se vuelven apuntes, resúmenes y quizzes."
+      "description": "Pizarras, diapositivas y cuadernos que se vuelven apuntes, resúmenes y quizzes.",
+      "detailsLegend": "Sobre la materia"
     },
     "WORK": {
       "label": "Trabajo",
-      "description": "Fotos de tareas y avances que se vuelven informes con evidencia."
+      "description": "Fotos de tareas y avances que se vuelven informes con evidencia.",
+      "detailsLegend": "Sobre el trabajo"
     },
     "CONTENT": {
       "label": "Contenido",
-      "description": "Productos y eventos que se vuelven posts y tu portafolio."
+      "description": "Productos y eventos que se vuelven posts y tu portafolio.",
+      "detailsLegend": "Sobre el portafolio"
     }
+  },
+  "roles": {
+    "OWNER": "Propietario",
+    "EDITOR": "Editor",
+    "VIEWER": "Lector"
+  },
+  "analysis": {
+    "PENDING": "Esperando a la IA",
+    "PROCESSING": "La IA lo está analizando",
+    "DONE": "Analizado",
+    "FAILED": "No se pudo analizar"
   },
   "auth": {
     "login": {
@@ -74,12 +95,177 @@
   },
   "spaces": {
     "title": "Espacios",
-    "intro": "Aquí verás tus Espacios de estudio, de trabajo y de contenido.",
-    "modesTitle": "Cada Espacio tiene un modo"
+    "listLabel": "Tus Espacios",
+    "create": "Nuevo Espacio",
+    "joinPrompt": "¿Te compartieron un código?",
+    "joinLink": "Únete a un Espacio",
+    "snapCount_one": "{{count}} snap",
+    "snapCount_other": "{{count}} snaps",
+    "memberCount_one": "{{count}} miembro",
+    "memberCount_other": "{{count}} miembros",
+    "error": "No se pudieron cargar tus Espacios.",
+    "empty": {
+      "title": "Crea tu primer Espacio",
+      "text": "Un Espacio reúne los snaps de una materia, un proyecto o un portafolio. Su modo decide qué hace la IA con ellos.",
+      "action": "Crear un Espacio"
+    },
+    "form": {
+      "title": "Nuevo Espacio",
+      "modeLegend": "¿Para qué es?",
+      "modeHint": "El modo no se puede cambiar después.",
+      "modeError": "Elige para qué es el Espacio.",
+      "name": "Nombre",
+      "nameError": "Ponle un nombre al Espacio.",
+      "description": "Descripción",
+      "colorLegend": "Color",
+      "colorOption": "Color {{number}} de {{total}}",
+      "submit": "Crear Espacio",
+      "submitting": "Creando el Espacio…",
+      "configError": "No se pudo preparar el formulario."
+    },
+    "metadata": {
+      "subject": "Materia",
+      "professor": "Profesor o profesora",
+      "semester": "Semestre",
+      "project": "Proyecto",
+      "client": "Cliente",
+      "siteLabel": "Lugar u obra",
+      "niche": "Nicho"
+    },
+    "detail": {
+      "error": "No se pudo abrir este Espacio.",
+      "role": "Tu rol: {{role}}",
+      "archived": "Archivado: puedes verlo, pero ya no recibe snaps.",
+      "capture": "Tomar un snap aquí",
+      "joined": "Te uniste al Espacio como {{role}}.",
+      "alreadyMember": "Ya eras parte de este Espacio.",
+      "tabsLabel": "Secciones del Espacio",
+      "tabs": {
+        "snaps": "Snaps",
+        "documents": "Documentos",
+        "study": "Estudio",
+        "members": "Miembros"
+      },
+      "uploaded_one": "Guardaste {{count}} snap. La IA lo está analizando.",
+      "uploaded_other": "Guardaste {{count}} snaps. La IA los está analizando."
+    },
+    "snaps": {
+      "gridLabel": "Snaps del Espacio",
+      "tile": "Snap del {{date}}. {{status}}.",
+      "error": "No se pudieron cargar los snaps.",
+      "empty": {
+        "title": "Todavía no hay snaps",
+        "text": "Toma una foto y guárdala aquí. La IA la analiza mientras sigues con lo tuyo.",
+        "textReadOnly": "Cuando alguien guarde fotos aquí, las verás en esta pestaña.",
+        "action": "Tomar el primer snap"
+      }
+    },
+    "study": {
+      "title": "Herramientas de estudio",
+      "intro": "Se arman solo con el contenido de los snaps analizados de este Espacio.",
+      "flashcards": {
+        "title": "Flashcards",
+        "text": "Preguntas y respuestas para memorizar lo importante."
+      },
+      "quiz": {
+        "title": "Quiz",
+        "text": "Preguntas de opción múltiple que se califican solas y explican cada respuesta."
+      },
+      "ask": {
+        "title": "Pregúntale a tus apuntes",
+        "text": "Respuestas que solo usan tus snaps y te dicen de cuál salieron."
+      }
+    }
+  },
+  "documents": {
+    "listLabel": "Documentos del Espacio",
+    "error": "No se pudieron cargar los documentos.",
+    "updated": "Editado el {{date}}",
+    "empty": {
+      "title": "Todavía no hay documentos",
+      "text": "Los documentos se crean con Compose: eliges varios snaps analizados y la IA arma el borrador."
+    },
+    "types": {
+      "STUDY_NOTES": "Apuntes",
+      "STUDY_SUMMARY": "Resumen",
+      "ASSIGNMENT_GUIDE": "Guía para un trabajo",
+      "WORK_DAILY_REPORT": "Informe del día",
+      "WORK_PROGRESS_REPORT": "Informe de avance",
+      "CONTENT_POST": "Post",
+      "CONTENT_CAROUSEL": "Carrusel"
+    },
+    "status": {
+      "DRAFT": "Borrador",
+      "FINAL": "Final"
+    }
+  },
+  "members": {
+    "listTitle": "Quiénes están",
+    "error": "No se pudieron cargar los miembros.",
+    "you": "Tú",
+    "invite": {
+      "title": "Invita a más personas",
+      "text": "Crea un código y compártelo. Quien lo use entra con el permiso que elijas.",
+      "privateNote": "Este Espacio es privado. Al crear un código, también lo verán sus miembros.",
+      "roleLegend": "Qué podrán hacer",
+      "roles": {
+        "EDITOR": {
+          "label": "Subir snaps",
+          "text": "Guardan fotos y crean documentos."
+        },
+        "VIEWER": {
+          "label": "Solo ver",
+          "text": "Ven los snaps, sus análisis y los documentos."
+        }
+      },
+      "create": "Crear código",
+      "creating": "Creando el código…",
+      "activeTitle": "Códigos activos",
+      "none": "No hay códigos activos.",
+      "loadError": "No se pudieron cargar los códigos.",
+      "grants": "Entran como {{role}}",
+      "expires": "Vence el {{date}}",
+      "uses": "Usado {{uses}} de {{maxUses}} veces",
+      "whatsapp": "WhatsApp",
+      "whatsappLabel": "Enviar el código {{code}} por WhatsApp",
+      "copyLink": "Copiar enlace",
+      "copyLinkLabel": "Copiar el enlace del código {{code}}",
+      "copied": "Enlace copiado.",
+      "copyFailed": "No se pudo copiar. Mantén presionado el código para copiarlo.",
+      "share": "Compartir",
+      "shareLabel": "Compartir el código {{code}}",
+      "message": "Únete a mi Espacio «{{space}}» en {{app}}: {{link}}",
+      "revoke": "Revocar",
+      "revokeLabel": "Revocar el código {{code}}"
+    }
+  },
+  "join": {
+    "title": "Únete a un Espacio",
+    "text": "Escribe el código que te compartieron. Entrarás con el permiso que eligió quien te invitó.",
+    "code": "Código de invitación",
+    "codeError": "Escribe el código.",
+    "submit": "Unirme",
+    "submitting": "Uniéndote…"
   },
   "capture": {
     "title": "Nuevo snap",
-    "intro": "Aquí tomarás fotos y las guardarás en un Espacio."
+    "takePhoto": "Tomar foto",
+    "pickPhotos": "Elegir de la galería",
+    "empty": "Toma una foto o elige varias de tu galería.",
+    "photosLabel": "Fotos elegidas",
+    "remove": "Quitar la foto {{number}}",
+    "tooMany": "Puedes subir hasta {{max}} fotos a la vez.",
+    "spaceLegend": "Guardar en",
+    "spaceError": "Elige un Espacio.",
+    "noSpaces": "Primero necesitas un Espacio donde guardar tus snaps.",
+    "createSpace": "Crear un Espacio",
+    "note": "Nota",
+    "submit_one": "Guardar {{count}} snap",
+    "submit_other": "Guardar {{count}} snaps",
+    "preparing": "Preparando la foto {{current}} de {{total}}…",
+    "uploading": "Subiendo… {{percent}}",
+    "progressLabel": "Progreso de la subida",
+    "loadError": "No se pudo preparar la cámara."
   },
   "explore": {
     "title": "Explorar",
@@ -103,7 +289,83 @@
     "RATE_LIMITED": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
     "VALIDATION_ERROR": "Revisa los datos y vuelve a intentarlo.",
     "UNAUTHENTICATED": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "FORBIDDEN": "No tienes permiso para esto.",
+    "SPACE_NOT_FOUND": "Este Espacio no existe.",
+    "COLOR_NOT_IN_PALETTE": "Ese color ya no está disponible. Elige otro.",
+    "SPACE_ARCHIVED": "Este Espacio está archivado: ya no acepta cambios.",
+    "SPACE_IS_PRIVATE": "Este Espacio es privado y no acepta miembros.",
+    "INVITE_NOT_FOUND": "Ese código no existe. Revisa que esté bien escrito.",
+    "INVITE_REVOKED": "Ese código fue revocado. Pide uno nuevo.",
+    "INVITE_EXPIRED": "Ese código ya venció. Pide uno nuevo.",
+    "INVITE_USED_UP": "Ese código ya no tiene usos disponibles. Pide uno nuevo.",
     "NETWORK_ERROR": "No hay conexión con el servidor. Revisa tu internet y vuelve a intentarlo.",
-    "UNKNOWN_ERROR": "Algo salió mal. Vuelve a intentarlo."
+    "UNKNOWN_ERROR": "Algo salió mal. Vuelve a intentarlo.",
+    "NO_FILES": "Elige al menos una foto.",
+    "TOO_MANY_FILES": "Son demasiadas fotos para una sola subida.",
+    "FILE_TOO_LARGE": "Una de las fotos pesa demasiado.",
+    "PAYLOAD_TOO_LARGE": "Lo que enviaste pesa demasiado.",
+    "UNSUPPORTED_MEDIA_TYPE": "Ese tipo de archivo no se puede subir.",
+    "UNSUPPORTED_IMAGE": "Una de las fotos no se pudo leer. Prueba con otra.",
+    "SNAP_LIMIT_REACHED": "Este Espacio ya tiene el máximo de snaps.",
+    "SNAP_NOT_FOUND": "Ese snap ya no existe.",
+    "ANALYSIS_IN_PROGRESS": "La IA todavía está analizando este snap. Espera a que termine.",
+    "NOT_SNAP_AUTHOR": "Solo quien tomó la foto puede compartirla."
+  },
+  "viewer": {
+    "close": "Cerrar",
+    "position": "{{current}} de {{total}}",
+    "previous": "Snap anterior",
+    "next": "Snap siguiente",
+    "photo": "Foto del {{date}}",
+    "error": "No se pudo abrir este snap.",
+    "insightError": "No se pudo cargar el análisis.",
+    "analyzing": "La IA está analizando esta foto…",
+    "failed": "No se pudo analizar esta foto. Prueba con Reanalizar.",
+    "reanalyzing": "Analizando de nuevo. El resultado aparecerá aquí.",
+    "edited": "Editado por una persona.",
+    "tags": "Etiquetas sugeridas",
+    "copy": "Copiar texto",
+    "copied": "Copiado",
+    "actions": "Acciones del snap",
+    "reanalyze": "Reanalizar",
+    "reanalyzeConfirm": "La IA analizará la foto otra vez y el resultado nuevo reemplazará al actual. ¿Continuar?",
+    "share": "Instante",
+    "shareTitle": "Compartir como Instante con",
+    "audiences": {
+      "FOLLOWERS": "Mis seguidores",
+      "SPACE_MEMBERS": "Los miembros del Espacio",
+      "PUBLIC": "Todo el mundo"
+    },
+    "shared": "Compartido como Instante hasta el {{date}}.",
+    "delete": "Borrar",
+    "deleteConfirm": "¿Borrar este snap? No se puede deshacer.",
+    "study": {
+      "text": "Texto extraído",
+      "noText": "La IA no encontró texto legible en la foto.",
+      "topics": "Temas",
+      "concepts": "Conceptos clave",
+      "warnings": "Avisos"
+    },
+    "work": {
+      "activity": "Actividad",
+      "progress": "Avance",
+      "issues": "Problemas",
+      "noIssues": "No se ven problemas.",
+      "severity": {
+        "LOW": "Leve",
+        "MEDIUM": "Moderado",
+        "HIGH": "Grave"
+      },
+      "objects": "Lo que se ve",
+      "safety": "Seguridad"
+    },
+    "content": {
+      "score": "Puntaje de la foto",
+      "scoreValue": "{{score}}/100",
+      "tips": "Cómo mejorarla",
+      "caption": "Caption sugerido",
+      "copyCaption": "Copiar caption",
+      "altText": "Texto alternativo"
+    }
   }
 }

@@ -22,6 +22,9 @@
   --mode-study: #2f5bea;
   --mode-work: #d9480f;
   --mode-content: #b8327a;
+  /* Behind photos and over them (status badges, the viewer), in both themes. */
+  --stage: #000000;
+  --on-stage: #ffffff;
   color-scheme: light;
 }
 
@@ -50,6 +53,8 @@
   --radius-*: initial;
   --font-*: initial;
   --spacing-nav: 4rem;
+  /* The photo in the viewer leaves room to see the start of the AI analysis below it. */
+  --spacing-photo: 70dvh;
 }
 
 @theme inline {
@@ -66,6 +71,8 @@
   --color-mode-study: var(--mode-study);
   --color-mode-work: var(--mode-work);
   --color-mode-content: var(--mode-content);
+  --color-stage: var(--stage);
+  --color-on-stage: var(--on-stage);
 
   --radius-control: 0.875rem;
   --radius-card: 1.25rem;

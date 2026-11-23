@@ -1,6 +1,7 @@
 export * from './schemas/enums';
 export * from './schemas/space-metadata';
 export * from './schemas/app-settings';
+export * from './schemas/app-config';
 export * from './schemas/auth';
 export * from './schemas/users';
 export * from './schemas/follows';
@@ -15,6 +16,7 @@ export * from './schemas/social';
 export type * from './types/enums';
 export type * from './types/space-metadata';
 export type * from './types/app-settings';
+export type * from './types/app-config';
 export type * from './types/auth';
 export type * from './types/users';
 export type * from './types/follows';

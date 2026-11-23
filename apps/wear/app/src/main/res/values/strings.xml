@@ -11,7 +11,10 @@
     <string name="menu_feed">Inicio</string>
     <string name="menu_logout">Cerrar sesión</string>
     <string name="spaces_empty">Crea un Espacio desde el celular.</string>
-    <string name="snap_count">%1$d snaps</string>
+    <plurals name="snap_count">
+        <item quantity="one">%1$d snap</item>
+        <item quantity="other">%1$d snaps</item>
+    </plurals>
     <string name="snaps_empty">Este Espacio no tiene snaps.</string>
     <string name="refresh">Actualizar</string>
     <string name="flashcards">Flashcards</string>

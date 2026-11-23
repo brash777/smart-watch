@@ -11,6 +11,21 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * Markdown and LaTeX as plain text for a small screen: no headings marks, dollar signs or
+ * commands, so "$\\frac{dy}{dx}$" reads "(dy)/(dx)".
+ */
+fun plain(text: String): String = text
+    .replace(Regex("""\\frac\{([^{}]*)\}\{([^{}]*)\}"""), "($1)/($2)")
+    .replace("\\cdot", "·")
+    .replace("\\times", "×")
+    .replace(Regex("""\\(left|right)"""), "")
+    .replace("$", "")
+    .replace("**", "")
+    .replace(Regex("""(?m)^#{1,6}\s*"""), "")
+    .replace(Regex("""(?m)^\s*- """), "• ")
+    .trim()
+
 /** An API failure: the code of { error: { code } }, or NETWORK_ERROR when Snapia is out of reach. */
 class ApiException(val status: Int, val code: String) : Exception(code)
 
@@ -119,15 +134,15 @@ class SnapiaApi(private val baseUrl: String) {
             throw error
         }
         val data = insight.getJSONObject("data")
-        val sections = mutableListOf(InsightSection(null, data.getString("summary")))
+        val sections = mutableListOf(InsightSection(null, plain(data.getString("summary"))))
         when (insight.getString("mode")) {
             "STUDY" -> {
                 val text = data.optString("extractedText")
-                if (text.isNotBlank()) sections += InsightSection(R.string.study_text, text)
+                if (text.isNotBlank()) sections += InsightSection(R.string.study_text, plain(text))
                 val topics = data.getJSONArray("topics").strings()
                 if (topics.isNotEmpty()) sections += InsightSection(R.string.study_topics, topics.joinToString(", "))
                 val concepts = data.getJSONArray("keyConcepts").objects()
-                    .joinToString("\n\n") { "${it.getString("term")}: ${it.getString("definition")}" }
+                    .joinToString("\n\n") { plain("${it.getString("term")}: ${it.getString("definition")}") }
                 if (concepts.isNotEmpty()) sections += InsightSection(R.string.study_concepts, concepts)
             }
             "WORK" -> {
@@ -163,7 +178,7 @@ class SnapiaApi(private val baseUrl: String) {
         val body = JSONObject().put("snapIds", studySnapIds(spaceId))
         val deck = call("POST", "/spaces/$spaceId/flashcards", body) as JSONObject
         return deck.getJSONArray("cards").objects().map {
-            Flashcard(it.getString("question"), it.getString("answer"))
+            Flashcard(plain(it.getString("question")), plain(it.getString("answer")))
         }
     }
 
@@ -174,7 +189,7 @@ class SnapiaApi(private val baseUrl: String) {
             id = quiz.getString("id"),
             title = quiz.getString("title"),
             questions = quiz.getJSONArray("questions").objects().map {
-                QuizQuestion(it.getString("prompt"), it.getJSONArray("options").strings())
+                QuizQuestion(plain(it.getString("prompt")), it.getJSONArray("options").strings().map(::plain))
             },
         )
     }

@@ -34,8 +34,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -44,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.ScalingLazyListScope
 import androidx.wear.compose.foundation.lazy.items
-import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
+import androidx.wear.compose.foundation.lazy.ScalingLazyListState
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.Card
@@ -107,8 +110,9 @@ fun SnapiaWatch(api: SnapiaApi) {
 
 /** A scrolling screen that follows the round display. */
 @Composable
-fun WatchList(content: ScalingLazyListScope.() -> Unit) {
-    val state = rememberScalingLazyListState()
+fun WatchList(page: Any? = null, content: ScalingLazyListScope.() -> Unit) {
+    // A new page (e.g. the next quiz question) starts at the top.
+    val state = remember(page) { ScalingLazyListState() }
     ScreenScaffold(scrollState = state) { contentPadding ->
         ScalingLazyColumn(
             state = state,
@@ -165,6 +169,7 @@ fun ScalingLazyListScope.loadState(load: Load<*>, retry: () -> Unit) {
     }
 }
 
+/** A one-line text field; the watch keyboard opens over it. No autocorrect: these are credentials. */
 @Composable
 fun Field(label: String, value: String, password: Boolean = false, onChange: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -177,7 +182,10 @@ fun Field(label: String, value: String, password: Boolean = false, onChange: (St
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrectEnabled = false,
                 keyboardType = if (password) KeyboardType.Password else KeyboardType.Email,
+                imeAction = ImeAction.Done,
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -276,7 +284,7 @@ fun SpacesScreen(api: SnapiaApi, onOpen: (Space) -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(space.name, maxLines = 2) },
                     secondaryLabel = {
-                        Text(stringResource(R.string.space_meta, stringResource(modeLabel(space.mode)), stringResource(R.string.snap_count, space.snapCount)))
+                        Text(stringResource(R.string.space_meta, stringResource(modeLabel(space.mode)), pluralStringResource(R.plurals.snap_count, space.snapCount, space.snapCount)))
                     },
                 )
             }
@@ -423,7 +431,7 @@ fun QuizScreen(api: SnapiaApi, space: Space) {
     var score by remember(round) { mutableStateOf<Int?>(null) }
     var error by remember(round) { mutableStateOf<Throwable?>(null) }
 
-    WatchList {
+    WatchList(page = "$round-${answers.size}-${score != null}") {
         item { ListHeader { Text(stringResource(R.string.quiz)) } }
         if (load is Load.Loading) item { Text(stringResource(R.string.generating), textAlign = TextAlign.Center) }
         loadState(load, retry)

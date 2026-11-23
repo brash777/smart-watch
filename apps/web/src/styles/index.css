@@ -33,3 +33,8 @@
 @utility pb-safe-nav {
   padding-bottom: calc(var(--spacing-nav) + env(safe-area-inset-bottom) + var(--spacing) * 4);
 }
+
+/* Sticks just above the bottom navigation (e.g. the bar of selected snaps). */
+@utility bottom-safe-nav {
+  bottom: calc(var(--spacing-nav) + env(safe-area-inset-bottom));
+}

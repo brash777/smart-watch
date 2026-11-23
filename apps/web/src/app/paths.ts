@@ -8,6 +8,9 @@ export const paths = {
   spaceStudy: (spaceId: string) => `/spaces/${spaceId}/study`,
   spaceMembers: (spaceId: string) => `/spaces/${spaceId}/members`,
   snap: (spaceId: string, snapId: string) => `/spaces/${spaceId}/snaps/${snapId}`,
+  spaceAsk: (spaceId: string) => `/spaces/${spaceId}/ask`,
+  compose: (spaceId: string) => `/spaces/${spaceId}/compose`,
+  document: (documentId: string) => `/documents/${documentId}`,
   /** The page to join a Space, with the invite code already filled in when there is one. */
   join: (code?: string) => (code === undefined ? '/join' : `/join/${code}`),
   capture: '/capture',

@@ -7,13 +7,17 @@ export interface AppConfigServiceDependencies {
   settings: SettingsService;
 }
 
-/** The settings the web app needs: the Space color palette and the upload limits. */
+/** The settings the web app needs: the Space palette, the Compose limits and the uploads. */
 export function createAppConfigService({ config, settings }: AppConfigServiceDependencies) {
   return {
     async get(): Promise<AppConfig> {
       const { maxFiles, maxFileSizeBytes, allowedMimeTypes, imageMaxSidePx } = config.upload;
       return {
         spaces: { colorPalette: await settings.getSetting('space_color_palette') },
+        compose: {
+          maxSnaps: await settings.getSetting('max_snaps_per_compose'),
+          assignmentGuideNotice: await settings.getSetting('assignment_guide_notice'),
+        },
         uploads: {
           maxFiles,
           maxFileSizeBytes,

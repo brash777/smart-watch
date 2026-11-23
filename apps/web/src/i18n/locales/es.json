@@ -144,7 +144,8 @@
         "snaps": "Snaps",
         "documents": "Documentos",
         "study": "Estudio",
-        "members": "Miembros"
+        "members": "Miembros",
+        "ask": "Preguntar"
       },
       "uploaded_one": "Guardaste {{count}} snap. La IA lo está analizando.",
       "uploaded_other": "Guardaste {{count}} snaps. La IA los está analizando."
@@ -197,6 +198,24 @@
     "status": {
       "DRAFT": "Borrador",
       "FINAL": "Final"
+    },
+    "version": "Versión {{version}}",
+    "titleLabel": "Título",
+    "contentLabel": "Contenido (Markdown)",
+    "viewLabel": "Modo del editor",
+    "edit": "Editar",
+    "preview": "Vista previa",
+    "sources": "Snaps usados",
+    "source": "Snap {{number}}",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "saved": "Cambios guardados.",
+    "markFinal": "Marcar como final",
+    "markDraft": "Volver a borrador",
+    "download": "Descargar",
+    "formats": {
+      "pdf": "PDF",
+      "md": "Markdown"
     }
   },
   "members": {
@@ -309,7 +328,22 @@
     "SNAP_LIMIT_REACHED": "Este Espacio ya tiene el máximo de snaps.",
     "SNAP_NOT_FOUND": "Ese snap ya no existe.",
     "ANALYSIS_IN_PROGRESS": "La IA todavía está analizando este snap. Espera a que termine.",
-    "NOT_SNAP_AUTHOR": "Solo quien tomó la foto puede compartirla."
+    "NOT_SNAP_AUTHOR": "Solo quien tomó la foto puede compartirla.",
+    "DOCUMENT_NOT_FOUND": "Ese documento ya no existe.",
+    "DOCUMENT_TYPE_NOT_ALLOWED": "Este Espacio no ofrece ese tipo de documento.",
+    "INSTRUCTIONS_REQUIRED": "Escribe el enunciado del trabajo.",
+    "TOO_MANY_SNAPS": "Elegiste demasiados snaps. Quita algunos.",
+    "SNAPS_NOT_ANALYZED": "Algunos snaps todavía no están analizados.",
+    "NO_ANALYZED_SNAPS": "Todavía no hay snaps analizados en este Espacio.",
+    "STUDY_SPACE_REQUIRED": "Esto solo existe en Espacios de estudio.",
+    "QUIZ_NOT_FOUND": "Ese quiz ya no existe.",
+    "INVALID_ANSWERS": "Responde todas las preguntas.",
+    "AI_INVALID_OUTPUT": "La IA respondió algo que no sirve. Vuelve a intentarlo.",
+    "AI_REFUSED": "La IA no quiso hacer esto con estos snaps.",
+    "AI_OUTPUT_TRUNCATED": "La respuesta de la IA quedó incompleta. Prueba con menos snaps.",
+    "AI_RATE_LIMITED": "La IA está muy ocupada. Espera un momento y vuelve a intentarlo.",
+    "AI_UNAVAILABLE": "La IA no está disponible ahora. Vuelve a intentarlo más tarde.",
+    "AI_TIMEOUT": "La IA tardó demasiado. Vuelve a intentarlo."
   },
   "viewer": {
     "close": "Cerrar",
@@ -367,5 +401,66 @@
       "copyCaption": "Copiar caption",
       "altText": "Texto alternativo"
     }
+  },
+  "compose": {
+    "intro": "Elige snaps analizados para crear un documento con la IA.",
+    "select": "Seleccionar",
+    "cancelSelect": "Cancelar",
+    "selectHint": "Toca los snaps analizados que quieres usar.",
+    "create_one": "Crear con IA ({{count}} snap)",
+    "create_other": "Crear con IA ({{count}} snaps)",
+    "title": "Crear con IA",
+    "selected_one": "Con {{count}} snap seleccionado.",
+    "selected_other": "Con {{count}} snaps seleccionados.",
+    "typeLegend": "¿Qué quieres crear?",
+    "typeError": "Elige qué documento crear.",
+    "typeHints": {
+      "STUDY_NOTES": "Apuntes completos y ordenados por tema.",
+      "STUDY_SUMMARY": "Un resumen corto con las ideas clave.",
+      "ASSIGNMENT_GUIDE": "Esquema, ideas clave, preguntas y vacíos para preparar un trabajo. No escribe el trabajo por ti.",
+      "WORK_DAILY_REPORT": "Lo que se hizo en el día, con una línea de tiempo y evidencia.",
+      "WORK_PROGRESS_REPORT": "El avance del periodo y lo que falta.",
+      "CONTENT_POST": "Un post con caption, hashtags y texto alternativo.",
+      "CONTENT_CAROUSEL": "Varias fotos en orden, con texto para cada una."
+    },
+    "instructions": "Instrucciones para la IA",
+    "assignmentLabel": "Enunciado del trabajo",
+    "assignmentError": "Escribe el enunciado del trabajo: la guía se arma a partir de él.",
+    "generate": "Generar",
+    "generating": "Generando…",
+    "writing": "La IA está escribiendo el borrador. Puede tardar un poco."
+  },
+  "study": {
+    "using_one": "Se usará {{count}} snap analizado, el más reciente.",
+    "using_other": "Se usarán los {{count}} snaps analizados más recientes.",
+    "noSnaps": "Cuando haya snaps analizados podrás crear flashcards y quizzes.",
+    "viewerOnly": "Solo quienes pueden subir snaps crean material de estudio.",
+    "generating": "La IA está preparando el material…",
+    "cardPosition": "Tarjeta {{current}} de {{total}}",
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "showAnswer": "Ver la respuesta",
+    "showQuestion": "Ver la pregunta",
+    "tapToFlip": "Toca la tarjeta para voltearla.",
+    "previousCard": "Anterior",
+    "nextCard": "Siguiente",
+    "score": "{{score}} de {{total}}",
+    "scoreText": "respuestas correctas",
+    "correct": "Respuesta correcta",
+    "wrong": "Tu respuesta",
+    "grade": "Calificar",
+    "grading": "Calificando…",
+    "retry": "Intentar de nuevo"
+  },
+  "ask": {
+    "title": "Pregúntale a tu Espacio",
+    "intro": "Las respuestas solo usan lo que hay en los snaps analizados y te dicen de cuáles salieron.",
+    "label": "Tu pregunta",
+    "placeholder": "Ej.: ¿Qué es la regla de la cadena?",
+    "send": "Enviar pregunta",
+    "thinking": "Buscando en tus snaps…",
+    "notFound": "Tus snaps no tienen esta respuesta.",
+    "sources": "Snaps citados",
+    "source": "Snap {{number}}"
   }
 }

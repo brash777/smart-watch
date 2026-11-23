@@ -196,3 +196,14 @@ export async function apiUpload<T>(
   if (response.status < 200 || response.status >= 300) throw toApiError(response, response.body);
   return z.object({ data: schema }).parse(response.body).data;
 }
+
+/** A file the API sends as an attachment, with the name of its Content-Disposition header. */
+export async function apiDownload(path: string): Promise<{ blob: Blob; fileName: string | null }> {
+  const response = await sendWithRefresh(path, {});
+  if (!response.ok) throw toApiError(response, await readBody(response));
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  const plain = /filename="?([^";]+)"?/i.exec(disposition)?.[1];
+  const fileName = encoded === undefined ? (plain ?? null) : decodeURIComponent(encoded);
+  return { blob: await response.blob(), fileName };
+}

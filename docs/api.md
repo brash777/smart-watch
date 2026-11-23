@@ -61,6 +61,10 @@ Public. What the web app needs before it creates a Space or uploads photos, so i
 {
   "data": {
     "spaces": { "colorPalette": ["#4F46E5", "#0EA5E9"] },
+    "compose": {
+      "maxSnaps": 20,
+      "assignmentGuideNotice": "Esta guía no es un trabajo listo para entregar…"
+    },
     "uploads": {
       "maxFiles": 10,
       "maxFileSizeBytes": 15728640,
@@ -71,13 +75,15 @@ Public. What the web app needs before it creates a Space or uploads photos, so i
 }
 ```
 
-| Field                      | Source                                                                      |
-| -------------------------- | --------------------------------------------------------------------------- |
-| `spaces.colorPalette`      | The `space_color_palette` setting: the colors `POST /api/spaces` accepts.   |
-| `uploads.maxFiles`         | `UPLOAD_MAX_FILES`.                                                         |
-| `uploads.maxFileSizeBytes` | `UPLOAD_MAX_MB`, in bytes.                                                  |
-| `uploads.allowedMimeTypes` | `UPLOAD_ALLOWED_MIME`.                                                      |
-| `uploads.imageMaxSidePx`   | `IMAGE_MAX_SIDE_PX`: the web app scales photos down to it before uploading. |
+| Field                           | Source                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `spaces.colorPalette`           | The `space_color_palette` setting: the colors `POST /api/spaces` accepts.   |
+| `compose.maxSnaps`              | The `max_snaps_per_compose` setting.                                        |
+| `compose.assignmentGuideNotice` | The `assignment_guide_notice` setting.                                      |
+| `uploads.maxFiles`              | `UPLOAD_MAX_FILES`.                                                         |
+| `uploads.maxFileSizeBytes`      | `UPLOAD_MAX_MB`, in bytes.                                                  |
+| `uploads.allowedMimeTypes`      | `UPLOAD_ALLOWED_MIME`.                                                      |
+| `uploads.imageMaxSidePx`        | `IMAGE_MAX_SIDE_PX`: the web app scales photos down to it before uploading. |
 
 ## Auth
 

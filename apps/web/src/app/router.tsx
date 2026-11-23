@@ -4,6 +4,8 @@ import { RequireAuth } from '../features/auth/components/require-auth';
 import { LoginPage } from '../features/auth/pages/login-page';
 import { RegisterPage } from '../features/auth/pages/register-page';
 import { CapturePage } from '../features/capture/pages/capture-page';
+import { ComposePage } from '../features/compose/pages/compose-page';
+import { DocumentPage } from '../features/documents/pages/document-page';
 import { SpaceDocumentsTab } from '../features/documents/pages/space-documents-tab';
 import { ExplorePage } from '../features/explore/pages/explore-page';
 import { HomePage } from '../features/home/pages/home-page';
@@ -11,6 +13,7 @@ import { ProfilePage } from '../features/profile/pages/profile-page';
 import { SpaceSnapsTab } from '../features/snaps/pages/space-snaps-tab';
 import { CreateSpacePage } from '../features/spaces/pages/create-space-page';
 import { JoinSpacePage } from '../features/spaces/pages/join-space-page';
+import { SpaceAskTab } from '../features/spaces/pages/space-ask-tab';
 import { SpaceMembersTab } from '../features/spaces/pages/space-members-tab';
 import { SpacePage } from '../features/spaces/pages/space-page';
 import { SpaceStudyTab } from '../features/spaces/pages/space-study-tab';
@@ -43,9 +46,12 @@ export const routes: RouteObject[] = [
               { index: true, element: <SpaceSnapsTab /> },
               { path: 'documents', element: <SpaceDocumentsTab /> },
               { path: 'study', element: <SpaceStudyTab /> },
+              { path: 'ask', element: <SpaceAskTab /> },
               { path: 'members', element: <SpaceMembersTab /> },
             ],
           },
+          { path: paths.compose(':spaceId'), element: <ComposePage /> },
+          { path: paths.document(':documentId'), element: <DocumentPage /> },
           { path: paths.join(), element: <JoinSpacePage /> },
           { path: paths.join(':code'), element: <JoinSpacePage /> },
           { path: paths.capture, element: <CapturePage /> },

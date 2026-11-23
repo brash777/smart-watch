@@ -9,6 +9,12 @@ export const appConfigSchema = z.object({
     /** Colors a Space can have (space_color_palette). */
     colorPalette: z.array(z.string()).min(1),
   }),
+  compose: z.object({
+    /** Snaps one Compose, FlashcardDeck or Quiz can use (max_snaps_per_compose). */
+    maxSnaps: z.number().int().positive(),
+    /** Shown with every ASSIGNMENT_GUIDE (assignment_guide_notice). */
+    assignmentGuideNotice: z.string(),
+  }),
   uploads: z.object({
     /** Photos in one upload request (UPLOAD_MAX_FILES). */
     maxFiles: z.number().int().positive(),

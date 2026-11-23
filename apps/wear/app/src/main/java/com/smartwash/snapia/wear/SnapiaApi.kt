@@ -22,6 +22,7 @@ fun plain(text: String): String = text
     .replace(Regex("""\\(left|right)"""), "")
     .replace("$", "")
     .replace("**", "")
+    .replace("`", "")
     .replace(Regex("""(?m)^#{1,6}\s*"""), "")
     .replace(Regex("""(?m)^\s*- """), "• ")
     .trim()

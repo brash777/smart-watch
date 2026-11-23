@@ -30,8 +30,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     ports:
-      - '127.0.0.1:${MINIO_API_PORT:?Set MINIO_API_PORT in .env}:9000'
-      - '127.0.0.1:${MINIO_CONSOLE_PORT:?Set MINIO_CONSOLE_PORT in .env}:9001'
+      - '${MINIO_BIND_ADDRESS:-127.0.0.1}:${MINIO_API_PORT:?Set MINIO_API_PORT in .env}:9000'
+      - '${MINIO_BIND_ADDRESS:-127.0.0.1}:${MINIO_CONSOLE_PORT:?Set MINIO_CONSOLE_PORT in .env}:9001'
     volumes:
       - minio-data:/data
     healthcheck:

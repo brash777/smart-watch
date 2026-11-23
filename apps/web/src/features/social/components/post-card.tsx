@@ -1,7 +1,7 @@
 import type { Post } from '@snapia/shared';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Heart, MessageCircle } from 'lucide-react';
-import { useRef, useState, type FormEvent } from 'react';
+import { Fragment, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { paths } from '../../../app/paths';
@@ -99,9 +99,12 @@ export function PostCard({ post }: { post: Post }) {
         <p className="px-4 whitespace-pre-line">
           {post.caption}{' '}
           {post.hashtags.map((hashtag) => (
-            <Link key={hashtag} to={paths.exploreTag(hashtag)} className="mr-1 font-semibold">
-              #{hashtag}
-            </Link>
+            // The space after each link lets a long list of hashtags wrap.
+            <Fragment key={hashtag}>
+              <Link to={paths.exploreTag(hashtag)} className="font-semibold">
+                #{hashtag}
+              </Link>{' '}
+            </Fragment>
           ))}
         </p>
       )}

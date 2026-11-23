@@ -485,7 +485,7 @@
     "title": "Pregúntale a tu Espacio",
     "intro": "Las respuestas solo usan lo que hay en los snaps analizados y te dicen de cuáles salieron.",
     "label": "Tu pregunta",
-    "placeholder": "Ej.: ¿Qué es la regla de la cadena?",
+    "placeholder": "Ej.: ¿Qué temas vimos en la última clase?",
     "send": "Enviar pregunta",
     "thinking": "Buscando en tus snaps…",
     "notFound": "Tus snaps no tienen esta respuesta.",

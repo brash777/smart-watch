@@ -124,7 +124,7 @@ export function SpaceSnapsTab() {
         }}
       />
       {selecting ? (
-        <div className="sticky bottom-safe-nav -mx-4 border-t border-line bg-surface px-4 py-3">
+        <div className="sticky bottom-safe-nav -mx-4 flex flex-col gap-2 border-t border-line bg-surface px-4 py-3">
           <Button
             disabled={selected.length === 0}
             onClick={() => {
@@ -132,6 +132,15 @@ export function SpaceSnapsTab() {
             }}
           >
             {t('compose.create', { count: selected.length })}
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={selected.length === 0}
+            onClick={() => {
+              void navigate(paths.newPost, { state: { snapIds: selected } });
+            }}
+          >
+            {t('posts.fromSnaps')}
           </Button>
         </div>
       ) : null}

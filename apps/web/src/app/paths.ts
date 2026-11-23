@@ -17,6 +17,11 @@ export const paths = {
   /** The camera with a Space already chosen. */
   captureIn: (spaceId: string) => `/capture?space=${encodeURIComponent(spaceId)}`,
   explore: '/explore',
+  exploreTag: (hashtag: string) => `/explore?hashtag=${encodeURIComponent(hashtag)}`,
+  newPost: '/posts/new',
+  /** A public profile; it opens without a session too. */
+  user: (username: string) => `/u/${username}`,
+  admin: '/admin',
   profile: '/profile',
   login: '/login',
   register: '/register',

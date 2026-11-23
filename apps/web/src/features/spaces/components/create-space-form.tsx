@@ -66,7 +66,9 @@ export function CreateSpaceForm({ palette, pending, error, onSubmit }: CreateSpa
     resolver: zodResolver(createSpaceFormSchema),
     defaultValues: { name: '', description: '', color: palette[0] ?? '', metadata: {} },
   });
-  const mode = useWatch({ control, name: 'mode' });
+  // An unchecked radio group gives null, so the watched value is matched against the modes.
+  const watchedMode: unknown = useWatch({ control, name: 'mode' });
+  const mode = modeOrder.find((option) => option === watchedMode);
   const submit = handleSubmit(onSubmit);
 
   return (

@@ -10,6 +10,8 @@ import { SpaceDocumentsTab } from '../features/documents/pages/space-documents-t
 import { ExplorePage } from '../features/explore/pages/explore-page';
 import { HomePage } from '../features/home/pages/home-page';
 import { ProfilePage } from '../features/profile/pages/profile-page';
+import { UserProfilePage } from '../features/profile/pages/user-profile-page';
+import { CreatePostPage } from '../features/social/pages/create-post-page';
 import { SpaceSnapsTab } from '../features/snaps/pages/space-snaps-tab';
 import { CreateSpacePage } from '../features/spaces/pages/create-space-page';
 import { JoinSpacePage } from '../features/spaces/pages/join-space-page';
@@ -19,6 +21,7 @@ import { SpacePage } from '../features/spaces/pages/space-page';
 import { SpaceStudyTab } from '../features/spaces/pages/space-study-tab';
 import { SpacesPage } from '../features/spaces/pages/spaces-page';
 import { AppLayout } from './layouts/app-layout';
+import { PublicLayout } from './layouts/public-layout';
 import { NotFoundPage } from './not-found-page';
 import { paths } from './paths';
 
@@ -55,6 +58,7 @@ export const routes: RouteObject[] = [
           { path: paths.join(), element: <JoinSpacePage /> },
           { path: paths.join(':code'), element: <JoinSpacePage /> },
           { path: paths.capture, element: <CapturePage /> },
+          { path: paths.newPost, element: <CreatePostPage /> },
           { path: paths.explore, element: <ExplorePage /> },
           { path: paths.profile, element: <ProfilePage /> },
         ],
@@ -67,6 +71,10 @@ export const routes: RouteObject[] = [
         }),
       },
     ],
+  },
+  {
+    element: <PublicLayout />,
+    children: [{ path: paths.user(':username'), element: <UserProfilePage /> }],
   },
   { path: '*', element: <NotFoundPage /> },
 ];

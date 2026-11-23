@@ -91,7 +91,12 @@
   },
   "home": {
     "title": "Inicio",
-    "intro": "Aquí verás los posts y los Instantes de las personas que sigues."
+    "error": "No se pudo cargar tu inicio.",
+    "empty": {
+      "title": "Tu inicio está vacío",
+      "text": "Sigue a otras personas para ver aquí sus posts e Instantes.",
+      "action": "Explorar posts"
+    }
   },
   "spaces": {
     "title": "Espacios",
@@ -288,13 +293,29 @@
   },
   "explore": {
     "title": "Explorar",
-    "intro": "Aquí descubrirás posts públicos por hashtag."
+    "searchLabel": "Buscar por hashtag",
+    "searchPlaceholder": "#hashtag",
+    "search": "Buscar",
+    "trending": "Tendencias",
+    "error": "No se pudieron cargar los posts.",
+    "empty": "No hay posts públicos con ese hashtag."
   },
   "profile": {
     "title": "Perfil",
     "username": "@{{username}}",
     "logout": "Cerrar sesión",
-    "loggingOut": "Cerrando sesión…"
+    "loggingOut": "Cerrando sesión…",
+    "counts": {
+      "posts": "Posts",
+      "followers": "Seguidores",
+      "following": "Siguiendo"
+    },
+    "follow": "Seguir",
+    "unfollow": "Dejar de seguir",
+    "signInToFollow": "Inicia sesión para seguir",
+    "noPosts": "Todavía no hay posts.",
+    "postsLabel": "Posts",
+    "admin": "Panel de administración"
   },
   "notFound": {
     "title": "Esta página no existe",
@@ -343,7 +364,12 @@
     "AI_OUTPUT_TRUNCATED": "La respuesta de la IA quedó incompleta. Prueba con menos snaps.",
     "AI_RATE_LIMITED": "La IA está muy ocupada. Espera un momento y vuelve a intentarlo.",
     "AI_UNAVAILABLE": "La IA no está disponible ahora. Vuelve a intentarlo más tarde.",
-    "AI_TIMEOUT": "La IA tardó demasiado. Vuelve a intentarlo."
+    "AI_TIMEOUT": "La IA tardó demasiado. Vuelve a intentarlo.",
+    "USER_NOT_FOUND": "Esa persona no existe.",
+    "POST_NOT_FOUND": "Ese post ya no existe.",
+    "CANNOT_FOLLOW_YOURSELF": "No puedes seguirte a ti mismo.",
+    "COMMENT_TOO_LONG": "El comentario es demasiado largo.",
+    "MOMENT_NOT_FOUND": "Ese Instante ya no está disponible."
   },
   "viewer": {
     "close": "Cerrar",
@@ -462,5 +488,49 @@
     "notFound": "Tus snaps no tienen esta respuesta.",
     "sources": "Snaps citados",
     "source": "Snap {{number}}"
+  },
+  "moments": {
+    "label": "Instantes",
+    "open": "Ver los Instantes de {{username}}",
+    "viewer": "Instantes de {{username}}",
+    "close": "Cerrar",
+    "previous": "Instante anterior",
+    "next": "Instante siguiente",
+    "photo": "Instante de {{username}}",
+    "views_one": "Lo vio {{count}} persona",
+    "views_other": "Lo vieron {{count}} personas"
+  },
+  "social": {
+    "photoAlt": "Foto de {{username}}",
+    "like": "Me gusta",
+    "likes_one": "{{count}} me gusta",
+    "likes_other": "{{count}} me gusta",
+    "comments_one": "{{count}} comentario",
+    "comments_other": "{{count}} comentarios",
+    "photos_one": "{{count}} foto",
+    "photos_other": "{{count}} fotos",
+    "commentsLabel": "Comentarios",
+    "noComments": "Todavía no hay comentarios.",
+    "commentLabel": "Tu comentario",
+    "commentPlaceholder": "Escribe un comentario…",
+    "send": "Publicar"
+  },
+  "posts": {
+    "fromSnaps": "Crear post",
+    "visibility": {
+      "PUBLIC": "Público: lo ve todo el mundo",
+      "FOLLOWERS": "Solo mis seguidores"
+    },
+    "new": {
+      "title": "Nuevo post",
+      "selected_one": "Con {{count}} foto.",
+      "selected_other": "Con {{count}} fotos.",
+      "drafting": "La IA está escribiendo un borrador del caption…",
+      "caption": "Caption",
+      "hashtags": "Hashtags",
+      "visibility": "Quién lo ve",
+      "publish": "Publicar",
+      "publishing": "Publicando…"
+    }
   }
 }

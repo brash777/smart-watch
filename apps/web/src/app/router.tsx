@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router';
 import { GuestOnly } from '../features/auth/components/guest-only';
+import { AdminPage } from '../features/admin/pages/admin-page';
 import { RequireAuth } from '../features/auth/components/require-auth';
 import { LoginPage } from '../features/auth/pages/login-page';
 import { RegisterPage } from '../features/auth/pages/register-page';
@@ -61,6 +62,7 @@ export const routes: RouteObject[] = [
           { path: paths.newPost, element: <CreatePostPage /> },
           { path: paths.explore, element: <ExplorePage /> },
           { path: paths.profile, element: <ProfilePage /> },
+          { path: paths.admin, element: <AdminPage /> },
         ],
       },
       // Full screen, without the navigation bars. Loaded on demand (it renders Markdown).

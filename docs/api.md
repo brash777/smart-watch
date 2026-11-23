@@ -210,6 +210,31 @@ Body: `{ "role": "ADMIN" }` or `{ "role": "USER" }`. The new role applies to the
 
 Errors of both: `400 VALIDATION_ERROR`, `400 CANNOT_MODIFY_YOURSELF` (ADMINs cannot change their own role or status), `404 USER_NOT_FOUND`.
 
+## Admin: settings and stats
+
+Every route requires a session with the `ADMIN` role (`401 UNAUTHENTICATED`, `403 FORBIDDEN`).
+
+### `GET /api/admin/settings`
+
+Every AppSetting: `{ "key", "valueType", "value", "description", "updatedAt" }`, sorted by key.
+
+### `PATCH /api/admin/settings/:key`
+
+Body: `{ "value": … }`, checked with the schema of the key (see `packages/shared/src/schemas/app-settings.ts`). The API reads the new value from its next request. **200** with the setting. Errors: `400 INVALID_SETTING_VALUE` (`details` lists the issues), `404 SETTING_NOT_FOUND`.
+
+### `GET /api/admin/stats`
+
+```json
+{
+  "data": {
+    "users": { "total": 42, "active": 40 },
+    "snapsByMode": { "STUDY": 120, "WORK": 35, "CONTENT": 18 },
+    "documents": 27,
+    "ai": { "runs": 210, "failed": 3, "estimatedCostUsd": 1.84 }
+  }
+}
+```
+
 ## Follows
 
 ### `POST /api/users/:username/follow` and `DELETE /api/users/:username/follow`

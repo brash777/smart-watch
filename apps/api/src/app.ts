@@ -17,6 +17,7 @@ import { createRequireSpaceRole } from './middlewares/require-space-role';
 import { requestId } from './middlewares/request-id';
 import { createImageUpload } from './middlewares/upload';
 import { createAiQueue, type AiQueue } from './modules/ai/ai-queue';
+import { createAdminRouter } from './modules/admin/admin.routes';
 import { createAppConfigRouter } from './modules/app-config/app-config.routes';
 import type { AiProvider } from './modules/ai/ai-provider';
 import { createAiRunner } from './modules/ai/ai-runner';
@@ -300,6 +301,7 @@ export function createApp({
   api.use('/users', createUsersRouter({ ...usersDependencies, optionalAuth, upload }));
   api.use('/users', createFollowsRouter({ config, prisma, authenticate, avatarUrl }));
   api.use('/admin/users', createAdminUsersRouter(usersDependencies));
+  api.use('/admin', createAdminRouter({ prisma, settings, authenticate }));
   api.use(
     '/spaces',
     createSpacesRouter({

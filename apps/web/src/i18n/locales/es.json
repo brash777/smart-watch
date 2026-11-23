@@ -369,7 +369,10 @@
     "POST_NOT_FOUND": "Ese post ya no existe.",
     "CANNOT_FOLLOW_YOURSELF": "No puedes seguirte a ti mismo.",
     "COMMENT_TOO_LONG": "El comentario es demasiado largo.",
-    "MOMENT_NOT_FOUND": "Ese Instante ya no está disponible."
+    "MOMENT_NOT_FOUND": "Ese Instante ya no está disponible.",
+    "INVALID_SETTING_VALUE": "Ese valor no es válido para este ajuste.",
+    "SETTING_NOT_FOUND": "Ese ajuste no existe.",
+    "CANNOT_MODIFY_YOURSELF": "No puedes cambiar tu propia cuenta desde aquí."
   },
   "viewer": {
     "close": "Cerrar",
@@ -531,6 +534,38 @@
       "visibility": "Quién lo ve",
       "publish": "Publicar",
       "publishing": "Publicando…"
+    }
+  },
+  "admin": {
+    "title": "Administración",
+    "stats": {
+      "title": "Resumen",
+      "users": "Usuarios",
+      "active_one": "{{count}} activo",
+      "active_other": "{{count}} activos",
+      "snaps": "Snaps de {{mode}}",
+      "documents": "Documentos generados",
+      "aiCost": "Costo estimado de IA",
+      "aiRuns_one": "{{count}} llamada, {{failed}} con error",
+      "aiRuns_other": "{{count}} llamadas, {{failed}} con error"
+    },
+    "users": {
+      "title": "Usuarios",
+      "search": "Buscar por nombre, usuario o email",
+      "searchButton": "Buscar",
+      "admin": "admin",
+      "activate": "Activar",
+      "deactivate": "Desactivar"
+    },
+    "settings": {
+      "title": "Ajustes",
+      "intro": "Reglas del producto. Los cambios se aplican en la siguiente petición.",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "saved": "Guardado.",
+      "true": "Sí",
+      "false": "No",
+      "listHint": "Un valor por línea."
     }
   }
 }

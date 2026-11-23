@@ -1,64 +1,62 @@
 # Snapia
 
-**A Smart Wash project.**
+**Take the photo. The AI does the rest.** A Smart Wash project.
 
-Snapia is an AI instant-photo app: take quick photos ("snaps") and save them in Spaces.
-Each Space has a mode (STUDY, WORK or CONTENT), and the AI turns its snaps into useful work:
-class notes and study material, work reports with photo evidence, or captions, posts and a portfolio.
+Snapia is an AI instant-photo PWA. People take quick photos ("snaps") and save them in Spaces. The AI analyzes every snap in the background and turns a selection of snaps into finished work, according to the mode of the Space. A social layer sits on top: Moments, Posts, a feed, likes, comments, Explore and public profiles.
 
-## Stack
+## The three modes
 
-- Monorepo with npm workspaces
-- `apps/api`: Node 22, Express, TypeScript, Prisma, PostgreSQL, MinIO/S3, Claude API (vision)
-- `apps/web`: React, Vite, TypeScript, Tailwind CSS, PWA
-- `packages/shared`: Zod schemas and shared types
+| Mode        | For                         | What the AI does with the snaps                                                                                                              |
+| ----------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **STUDY**   | Students                    | Reads whiteboards and slides; writes notes, summaries and assignment guides; makes flashcards, quizzes and an Ask chat that cites the snaps. |
+| **WORK**    | Interns, technicians, teams | Describes the work, its progress and visible issues; writes daily and progress reports with photo evidence.                                  |
+| **CONTENT** | Creators                    | Scores the photo, suggests improvements, a caption, hashtags and alt text; drafts posts and carousels.                                       |
 
-## Status
+The rules of the product are in [docs/PRODUCT.md](docs/PRODUCT.md), the API in [docs/api.md](docs/api.md) and the engineering rules in [CLAUDE.md](CLAUDE.md).
 
-In progress.
-
-## Getting started
+## Run it
 
 Requirements: Node.js 22 (`nvm use`), npm and Docker.
 
 ```bash
 cp .env.example .env   # local configuration; never commit .env
 npm install            # installs every workspace and enables the git hooks
-npm run db:up          # starts PostgreSQL and MinIO and waits until they are healthy
-npm run db:migrate     # applies the database migrations
-npm run db:seed        # loads the settings, the first ADMIN and (optionally) demo data
-npm run dev            # runs the API and the web app in watch mode
+npm run db:up          # PostgreSQL and MinIO
+npm run db:migrate     # database migrations
+npm run db:seed        # AppSettings, the first ADMIN and (optionally) demo data
+npm run dev            # API and web app in watch mode
 ```
 
-Then open the web app at `WEB_BASE_URL` (http://localhost:5173 by default), or `GET /api/health` on the API (`API_BASE_URL`). The web app calls the API through the Vite proxy (`VITE_API_URL=/api`), so a phone on the same network works too: run `npm run dev:web -- --host` and open the Network URL that Vite prints.
+Open the web app at `WEB_BASE_URL` (http://localhost:5173 by default). To try it from a phone on the same Wi-Fi, run `npm run dev:web -- --host` and open the Network URL that Vite prints: the web app reaches the API through the Vite proxy. The admin panel is at `/admin` for the seeded ADMIN.
 
-`npm install` runs `git config core.hooksPath .githooks`. The `commit-msg` hook keeps commit messages free of attribution lines.
+| Script                                            | What it does                                       |
+| ------------------------------------------------- | -------------------------------------------------- |
+| `npm run dev`                                     | API and web app in parallel                        |
+| `npm run build`                                   | Builds every workspace                             |
+| `npm run lint` / `npm run typecheck` / `npm test` | ESLint, TypeScript and Vitest (tests need `db:up`) |
+| `npm run db:migrate` / `db:seed` / `db:studio`    | Prisma commands for the API database               |
 
-`npm test` needs PostgreSQL running (`npm run db:up`): the API integration tests create, migrate and empty the `TEST_DATABASE_URL` database, never `DATABASE_URL`.
+CI (`.github/workflows/ci.yml`) installs, typechecks and builds every push and pull request.
 
-| Script                                                         | What it does                                        |
-| -------------------------------------------------------------- | --------------------------------------------------- |
-| `npm run dev`                                                  | Every `dev:*` script in parallel (for now, the API) |
-| `npm run build`                                                | Builds every workspace that has a build             |
-| `npm run lint` / `npm run typecheck` / `npm test`              | ESLint, TypeScript and Vitest checks                |
-| `npm run format`                                               | Formats the repository with Prettier                |
-| `npm run db:up` / `npm run db:down`                            | Starts or stops the Docker services                 |
-| `npm run db:migrate` / `db:generate` / `db:seed` / `db:studio` | Prisma commands for the API database                |
+## Environment variables
 
-## Documentation
+Every variable is documented in [.env.example](.env.example) and validated with Zod at startup; nothing is hardcoded. The main groups:
 
-- [Product specification](docs/PRODUCT.md)
-- [Project rules](CLAUDE.md)
+| Group          | Variables                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| App and HTTP   | `APP_NAME`, `API_PORT`, `API_BASE_URL`, `WEB_BASE_URL`, `CORS_ORIGINS`                                           |
+| Database       | `DATABASE_URL`, `TEST_DATABASE_URL`                                                                              |
+| Auth           | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL`                                   |
+| Storage        | `STORAGE_DRIVER`, `S3_*`, `SIGNED_URL_TTL_SECONDS`                                                               |
+| Uploads        | `UPLOAD_MAX_MB`, `UPLOAD_MAX_FILES`, `UPLOAD_ALLOWED_MIME`, `IMAGE_MAX_SIDE_PX`                                  |
+| AI             | `AI_PROVIDER` (`mock` or `anthropic`), `ANTHROPIC_API_KEY`, `AI_MODEL`, `AI_EFFORT`, `AI_*`                      |
+| Web app (Vite) | `VITE_APP_NAME`, `VITE_API_URL`, `VITE_API_PROXY_TARGET`, `VITE_WHATSAPP_SHARE_URL`, `VITE_UPLOAD_IMAGE_QUALITY` |
+| Seed           | `SEED_ADMIN_*`, `SEED_DEMO_DATA`                                                                                 |
 
-## Claude Code skills
+Product rules that an ADMIN can change without a deploy (Moment duration, invite defaults, AI output language, token prices…) are AppSettings, editable in `/admin`.
 
-Project skills live in `.claude/skills/`. Claude Code loads them automatically; type `/skills` to list them.
+## Stack
 
-| Skill                | What it is for                                                                                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `snapia-conventions` | Folder structure, naming, glossary, English code, Spanish UI through i18n and where each value lives. Use before creating or editing any file.             |
-| `git-commit`         | Checks, Conventional Commits, no attribution lines, verification and push. Use before committing, pushing or opening a pull request.                       |
-| `api-module`         | Backend feature modules: routes, controller, service, repository, Zod schemas, Space authorization and tests. Use when adding or changing an API endpoint. |
-| `ai-vision-task`     | AI tasks: the AiProvider interface, versioned prompts, JSON output validated with Zod, privacy rules and AiRun logging. Use for any prompt or LLM call.    |
-| `prisma-change`      | Database changes: model conventions, migrations and idempotent seed data. Use when changing tables, columns, relations or seed data.                       |
-| `react-feature`      | Screens and components: TanStack Query, i18n, design tokens, mobile-first Instagram-like UX and accessibility. Use when creating or changing UI.           |
+- `apps/api`: Node 22, Express, TypeScript, Prisma, PostgreSQL, MinIO/S3, Claude API with vision
+- `apps/web`: React, Vite, TypeScript, Tailwind CSS, TanStack Query, i18next, PWA
+- `packages/shared`: Zod schemas and types used by both

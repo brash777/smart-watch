@@ -99,13 +99,13 @@ Verified:
 
 Not verified:
 
-- **The real AI.** `.env` has `AI_PROVIDER=mock` and no `ANTHROPIC_API_KEY`, so every analysis is the same fixture (a STUDY snap always "reads" the chain rule). `AnthropicAiProvider` is only covered by tests with a mocked SDK.
+- **The real AI.** `.env` has `AI_PROVIDER=mock` and no `ANTHROPIC_API_KEY`, so every analysis is the same fixture (a STUDY snap always "reads" a UML class diagram of a product sales system, the topic of the demo). `AnthropicAiProvider` is only covered by tests with a mocked SDK.
 - A real phone (see 7.2), the GitHub Actions run, the watch's double-tap like and quiz score screen, and the last watch changes (plain text, plural, quiz scroll) on screen.
 
 ## 7. Known problems
 
 1. **Mock AI.** Real analysis needs `AI_PROVIDER=anthropic` and the user's `ANTHROPIC_API_KEY` in `.env` (costs a few cents per photo). The user decides; never ask them to paste the key into a chat. After switching, run the full flow and read the outputs of each prompt in Spanish (`ai_output_language=es`).
-2. **Photos do not load on a real phone.** `docker-compose.yml` binds MinIO to `127.0.0.1:9000`, and `S3_ENDPOINT=http://localhost:9000` makes every signed URL point at `localhost`, which on the phone is the phone. Fix for local demos, with the user's approval: let MinIO listen on the LAN (a variable for the bind address in `docker-compose.yml`, defaulting to `127.0.0.1`) and set `S3_ENDPOINT` to the Mac's LAN IP. Then the watch also gets LAN URLs: allow that host in `apps/wear/app/src/main/res/xml/network_security_config.xml` (or a debug-only cleartext base config).
+2. **Photos do not load on a real phone.** `docker-compose.yml` binds MinIO to `127.0.0.1:9000`, and `S3_ENDPOINT=http://localhost:9000` makes every signed URL point at `localhost`, which on the phone is the phone. `MINIO_BIND_ADDRESS` (default `127.0.0.1`) now exists in `docker-compose.yml`: for a phone demo set it to `0.0.0.0` and `S3_ENDPOINT` to the Mac's LAN IP, then `npm run db:down && npm run db:up`. The user decided to present on the web of the computer and on the watch, so the `.env` keeps `localhost`. If the phone setup is used, the watch also gets LAN URLs: allow that host in `apps/wear/app/src/main/res/xml/network_security_config.xml` (or a debug-only cleartext base config).
 3. **Taken date lost on scaled uploads.** The browser re-encodes photos bigger than `IMAGE_MAX_SIDE_PX` (`apps/web/src/features/capture/lib/compress-photo.ts`), which drops EXIF, so `takenAt` becomes the upload time. WORK timelines need the real date. Fix: read `DateTimeOriginal` (+ `OffsetTimeOriginal`) from the original JPEG and write a minimal EXIF segment into the new JPEG, or send it in a new upload field.
 4. **Typing on the watch is hard.** The user found the watch app hard to use and to explain. Proposal waiting for the user's answer: "Conectar reloj" in the web profile shows a 6-digit code (new API endpoints: create a short-lived pairing code for the signed-in user; exchange it for a session on the watch), and a watch home with two big buttons: "Repasar" (flashcards/quiz of the latest STUDY Space) and "Lo último" (latest analyzed snap). Also: the watch keeps the access token only in memory (expires after `JWT_ACCESS_TTL`), so it must sign in again.
 5. **Bundle size.** The main web chunk is about 860 kB (Vite warns). Only the snap viewer is lazy; make the other routes lazy too.
@@ -117,7 +117,7 @@ Each item needs its tests (section 9) and its docs (`docs/api.md` for endpoints,
 
 **P0: before the next demo**
 
-- Decide and apply 7.1 (real AI) and 7.2 (photos on the phone) with the user; then run the manual checklist of section 9 on a real phone and on the watch.
+- Decided: the AI stays in mock mode (free) and the demo runs on the computer's browser and the watch emulator. Run the manual checklist of section 9 there.
 - Web test for creating a Space (required by part 10 and still missing): mode choice with its fields, validation without calling the API, the exact body sent, navigation to the new Space.
 - Tests for `/api/admin/settings` and `/api/admin/stats`: 401, 403 for a USER, list, valid update, invalid value, unknown key, numbers in stats.
 - Check that the GitHub Actions run of `main` is green.

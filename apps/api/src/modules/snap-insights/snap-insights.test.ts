@@ -123,7 +123,7 @@ describe('GET /api/snaps/:id/insight', () => {
         promptVersion: 'snap-analysis.study.v1',
         editedByUser: false,
       });
-      expect(data.mode === 'STUDY' && data.data.extractedText).toContain('La célula animal');
+      expect(data.mode === 'STUDY' && data.data.extractedText).toContain('Diagrama de clases');
     }
   });
 

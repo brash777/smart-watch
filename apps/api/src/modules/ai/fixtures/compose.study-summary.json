@@ -1,4 +1,4 @@
 {
-  "title": "Resumen: la célula animal",
-  "contentMarkdown": "La clase explica la estructura de la célula animal y sus principales organelos [Snap 1].\n\n## Ideas clave\n\n- El núcleo contiene el ADN y controla la célula [Snap 1].\n- Las mitocondrias producen energía (ATP) mediante la respiración celular [Snap 1].\n- El aparato de Golgi empaqueta y envía proteínas a su destino [Snap 1]."
+  "title": "Resumen: diagrama de clases del sistema de venta",
+  "contentMarkdown": "El diagrama modela un sistema de venta de productos con cuatro clases: Producto, Cliente, Pedido e ItemPedido [Snap 1].\n\n## Ideas clave\n\n- Un Cliente hace muchos Pedidos (1 → *) [Snap 1].\n- Un Pedido tiene muchos ItemsPedido y cada Item referencia un Producto [Snap 1].\n- La multiplicidad indica cuántas instancias participan en cada relación [Snap 1]."
 }

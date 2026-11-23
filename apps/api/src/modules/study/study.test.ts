@@ -111,7 +111,7 @@ describe('POST /api/spaces/:spaceId/flashcards', () => {
     expect(response.status).toBe(201);
     const { data } = deckResponseSchema.parse(response.body);
     expect(data).toMatchObject({
-      title: 'La célula animal',
+      title: 'Diagrama de clases UML',
       promptVersion: 'generate-flashcards.v1',
     });
     expect(data.cards).toHaveLength(3);
@@ -136,7 +136,7 @@ describe('POST /api/spaces/:spaceId/quizzes', () => {
     const quiz = await createQuiz(ctx);
 
     expect(quiz).toMatchObject({
-      title: 'Quiz: la célula animal',
+      title: 'Quiz: diagrama de clases UML',
       promptVersion: 'generate-quiz.v1',
     });
     expect(quiz.questions).toHaveLength(3);

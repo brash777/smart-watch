@@ -1,19 +1,19 @@
 {
-  "title": "La célula animal",
+  "title": "Diagrama de clases UML",
   "cards": [
     {
-      "question": "¿Qué contiene el núcleo de la célula?",
-      "answer": "El ADN, que controla el funcionamiento de la célula.",
+      "question": "¿Qué es una clase en UML?",
+      "answer": "Una plantilla que define los atributos y métodos de un conjunto de objetos.",
       "sourceSnap": 1
     },
     {
-      "question": "¿Qué función cumplen las mitocondrias?",
-      "answer": "Producir energía en forma de ATP mediante la respiración celular.",
+      "question": "¿Qué indica la multiplicidad 1 → *?",
+      "answer": "Que una instancia de una clase se relaciona con muchas instancias de otra.",
       "sourceSnap": 1
     },
     {
-      "question": "¿Qué hace el aparato de Golgi?",
-      "answer": "Modifica, clasifica y empaqueta las proteínas para enviarlas a su destino.",
+      "question": "¿Qué relación hay entre Pedido e ItemPedido?",
+      "answer": "Un Pedido tiene muchos ItemsPedido (composición 1 → *).",
       "sourceSnap": 1
     }
   ]

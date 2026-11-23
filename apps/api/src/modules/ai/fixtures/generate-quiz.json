@@ -1,35 +1,30 @@
 {
-  "title": "Quiz: la célula animal",
+  "title": "Quiz: diagrama de clases UML",
   "questions": [
     {
-      "prompt": "¿Qué organelo contiene el ADN?",
-      "options": ["Mitocondria", "Núcleo", "Lisosoma", "Aparato de Golgi"],
+      "prompt": "¿Qué clase representa quien hace los pedidos?",
+      "options": ["Producto", "Cliente", "ItemPedido", "Pedido"],
       "correctIndex": 1,
-      "explanation": "El núcleo es el organelo que almacena el ADN y controla la actividad celular.",
+      "explanation": "El Cliente hace los Pedidos, según la relación 1 → * del diagrama.",
       "sourceSnap": 1
     },
     {
-      "prompt": "¿Dónde se produce la energía (ATP) de la célula?",
+      "prompt": "¿Qué indica la multiplicidad * → 1 entre ItemPedido y Producto?",
       "options": [
-        "En el núcleo",
-        "En los lisosomas",
-        "En las mitocondrias",
-        "En la membrana plasmática"
+        "Un producto tiene un solo item",
+        "Muchos items referencian un producto",
+        "Cada item referencia un solo producto",
+        "No hay relación"
       ],
       "correctIndex": 2,
-      "explanation": "Las mitocondrias son los organelos encargados de la respiración celular y la producción de ATP.",
+      "explanation": "La multiplicidad * → 1 significa que muchos ItemPedido pueden referenciar un mismo Producto.",
       "sourceSnap": 1
     },
     {
-      "prompt": "¿Qué función cumple el aparato de Golgi?",
-      "options": [
-        "Producir energía",
-        "Almacenar el ADN",
-        "Modificar, clasificar y empaquetar proteínas",
-        "Digerir moléculas"
-      ],
+      "prompt": "¿Qué atributo NO pertenece a la clase Producto?",
+      "options": ["nombre", "precio", "fecha", "stock"],
       "correctIndex": 2,
-      "explanation": "El aparato de Golgi recibe proteínas del retículo endoplasmático, las modifica y las envía a su destino.",
+      "explanation": "El atributo fecha pertenece a Pedido, no a Producto. Producto tiene id, nombre, precio y stock.",
       "sourceSnap": 1
     }
   ]

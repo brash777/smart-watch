@@ -1,4 +1,4 @@
 {
-  "answer": "El núcleo contiene el ADN y controla el funcionamiento de la célula [Snap 1].",
+  "answer": "Un Cliente hace muchos Pedidos (relación 1 → *), y cada Pedido tiene muchos ItemsPedido que referencian un Producto [Snap 1].",
   "found": true
 }

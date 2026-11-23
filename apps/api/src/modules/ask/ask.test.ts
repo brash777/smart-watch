@@ -72,7 +72,7 @@ async function scenario() {
   await request(app)
     .post(`/api/spaces/${space.id}/snaps`)
     .set(tokens.leo)
-    .field('note', 'Diagrama de la célula animal')
+    .field('note', 'Diagrama de clases UML')
     .attach('files', await createTestJpeg(), { filename: 'b.jpg', contentType: 'image/jpeg' })
     .expect(201);
   await aiQueue.onIdle();
@@ -84,20 +84,20 @@ describe('POST /api/spaces/:spaceId/ask', () => {
   it('answers with the snaps that share more words with the question, and saves both messages', async () => {
     const { app, users, space, tokens } = await scenario();
     const chainSnap = await prisma.snap.findFirstOrThrow({
-      where: { note: { contains: 'célula' } },
+      where: { note: { contains: 'UML' } },
     });
 
     const response = await request(app)
       .post(`/api/spaces/${space.id}/ask`)
       .set(tokens.leo)
-      .send({ question: '¿Qué organelos tiene la célula animal?' });
+      .send({ question: '¿Qué clases tiene el diagrama?' });
 
     expect(response.status).toBe(201);
     const { data } = exchangeResponseSchema.parse(response.body);
     expect(data.found).toBe(true);
     expect(data.question).toMatchObject({
       role: 'USER',
-      content: '¿Qué organelos tiene la célula animal?',
+      content: '¿Qué clases tiene el diagrama?',
     });
     expect(data.answer).toMatchObject({ role: 'ASSISTANT', citedSnapIds: [chainSnap.id] });
     expect(data.answer.content).toContain('[Snap 1]');
@@ -110,9 +110,9 @@ describe('POST /api/spaces/:spaceId/ask', () => {
     const sent = provider.calls.at(-1)?.request;
     expect(sent?.promptName).toBe('ask-space');
     const text = sent?.text ?? '';
-    expect(text).toContain('¿Qué organelos tiene la célula animal?');
-    // The snap about the cell goes first.
-    expect(text.indexOf('Diagrama de la célula animal')).toBeLessThan(
+    expect(text).toContain('¿Qué clases tiene el diagrama?');
+    // The snap about the UML diagram goes first.
+    expect(text.indexOf('Diagrama de clases UML')).toBeLessThan(
       text.indexOf('Integrales por partes'),
     );
   });
@@ -126,13 +126,13 @@ describe('POST /api/spaces/:spaceId/ask', () => {
         .send({ question })
         .expect(201);
 
-    await ask('¿Qué es el núcleo de la célula?');
+    await ask('¿Qué relación hay entre Cliente y Pedido?');
     await ask('¿Y un ejemplo?');
 
     const text = provider.calls.at(-1)?.request.text ?? '';
     const history = text.slice(text.indexOf('<history>'), text.indexOf('</history>'));
-    expect(history).toContain('- Question: ¿Qué es el núcleo de la célula?');
-    expect(history).toContain('- Answer: El núcleo contiene el ADN');
+    expect(history).toContain('- Question: ¿Qué relación hay entre Cliente y Pedido?');
+    expect(history).toContain('- Answer: Un Cliente hace muchos Pedidos');
     expect(history).not.toContain('[Snap');
   });
 

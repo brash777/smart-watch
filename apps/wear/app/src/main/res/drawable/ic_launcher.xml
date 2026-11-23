@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The brand ring: three arcs in the colors of the Space modes. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#15171B" android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48z" />
+    <path android:strokeColor="#7B98FF" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M42.07,18.13 A19,19 0 0,1 30.05,42.02" />
+    <path android:strokeColor="#FF8A4C" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M23.93,43 A19,19 0 0,1 5.07,22.67" />
+    <path android:strokeColor="#F06BAA" android:strokeWidth="5" android:strokeLineCap="round"
+        android:pathData="M6.9,15.79 A19,19 0 0,1 35.09,8.6" />
+    <path android:fillColor="#ECEEF2" android:pathData="M24,19a5,5 0,1 1,0 10a5,5 0,1 1,0 -10z" />
+</vector>

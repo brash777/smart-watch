@@ -38,6 +38,15 @@ Open the web app at `WEB_BASE_URL` (http://localhost:5173 by default). To try it
 
 CI (`.github/workflows/ci.yml`) installs, typechecks and builds every push and pull request.
 
+## Watch (Wear OS)
+
+`apps/wear` is a Wear OS app (Kotlin, Compose for Wear OS) on the same API: sign in, Spaces, snaps with their AI analysis, flashcards, quizzes and the feed with like by double tap.
+
+1. In Android Studio, create a **Wear OS Large Round** virtual device (Device Manager) and start it.
+2. Open the `apps/wear` folder in Android Studio and wait for the Gradle sync.
+3. With the API running (`npm run dev:api`), let the emulator reach this computer: `adb reverse tcp:4000 tcp:4000` and `adb reverse tcp:9000 tcp:9000` (photos in MinIO).
+4. Run the `app` configuration on the watch. The API URL is `snapia.apiUrl` in `apps/wear/gradle.properties`.
+
 ## Environment variables
 
 Every variable is documented in [.env.example](.env.example) and validated with Zod at startup; nothing is hardcoded. The main groups:

@@ -282,7 +282,7 @@ The first ADMIN is created by the database seed, with credentials taken from `.e
 
 Not planned for now:
 
-- Native mobile apps (Snapia is a PWA).
+- Native phone apps (Snapia is a PWA). The one native app is the Wear OS companion in `apps/wear`: it signs in with the same API and shows Spaces, snaps with their analysis, flashcards, quizzes and the feed. A watch does not take snaps.
 - Payments and subscriptions.
 - Push notifications.
 - Word export of Documents (they export to PDF and Markdown).

@@ -94,13 +94,28 @@ describe('LoginPage', () => {
     fakeApi({
       'POST /auth/refresh': noSession,
       'POST /auth/login': { status: 200, body: { data: session } },
+      'GET /users/ana': {
+        status: 200,
+        body: {
+          data: {
+            id: session.user.id,
+            name: session.user.name,
+            username: session.user.username,
+            avatarUrl: null,
+            bio: null,
+            counts: { posts: 0, followers: 0, following: 0 },
+            isFollowedByMe: false,
+          },
+        },
+      },
+      'GET /users/ana/posts': { status: 200, body: { data: [], meta: { nextCursor: null } } },
     });
     const { router } = renderApp('/profile');
 
     await fillIn('ana', 'secreto-123');
 
     expect(await screen.findByRole('heading', { name: es.profile.title })).toBeInTheDocument();
-    expect(screen.getByText(session.user.name)).toBeInTheDocument();
+    expect(await screen.findByText(session.user.name)).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/profile');
   });
 });

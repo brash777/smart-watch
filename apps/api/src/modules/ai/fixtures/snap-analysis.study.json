@@ -1,18 +1,22 @@
 {
   "contentType": "WHITEBOARD",
-  "extractedText": "# Regla de la cadena\n\nSi $y = f(g(x))$, entonces:\n\n$$\\frac{dy}{dx} = f'(g(x)) \\cdot g'(x)$$\n\n## Ejemplo\n\n- $y = (3x^2 + 1)^5$\n- $y' = 5(3x^2 + 1)^4 \\cdot 6x$",
-  "summary": "Pizarra con la regla de la cadena para derivar funciones compuestas y un ejemplo resuelto.",
-  "topics": ["Regla de la cadena", "Derivada de funciones compuestas"],
+  "extractedText": "# La célula animal\n\n## Organelos principales\n\n- **Núcleo**: contiene el ADN y controla la célula.\n- **Mitocondrias**: producen energía (ATP) mediante la respiración celular.\n- **Retículo endoplasmático**: síntesis de proteínas (rugoso) y lípidos (liso).\n- **Aparato de Golgi**: modifica, clasifica y empaqueta proteínas.\n- **Lisosomas**: digestión celular.\n- **Membrana plasmática**: regula el paso de sustancias.",
+  "summary": "Pizarra con un diagrama de la célula animal y sus principales organelos: núcleo, mitocondrias, retículo endoplasmático, aparato de Golgi, lisosomas y membrana plasmática.",
+  "topics": ["La célula animal", "Organelos celulares"],
   "keyConcepts": [
     {
-      "term": "Regla de la cadena",
-      "definition": "La derivada de f(g(x)) es f'(g(x)) multiplicada por g'(x)."
+      "term": "Núcleo",
+      "definition": "Organelo que contiene el ADN y dirige el funcionamiento de la célula."
     },
     {
-      "term": "Función compuesta",
-      "definition": "Una función aplicada al resultado de otra, como f(g(x))."
+      "term": "Mitocondria",
+      "definition": "Organelo encargado de producir energía en forma de ATP mediante la respiración celular."
+    },
+    {
+      "term": "Aparato de Golgi",
+      "definition": "Modifica, clasifica y empaqueta las proteínas para enviarlas a su destino."
     }
   ],
-  "warnings": ["La esquina inferior derecha de la pizarra tiene reflejo y no se lee completa."],
-  "suggestedTags": ["cálculo", "derivadas", "regla de la cadena"]
+  "warnings": ["La parte inferior del diagrama está parcialmente borrosa."],
+  "suggestedTags": ["biología", "célula", "organelos"]
 }

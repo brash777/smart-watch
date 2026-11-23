@@ -1,40 +1,35 @@
 {
-  "title": "Quiz: regla de la cadena",
+  "title": "Quiz: la célula animal",
   "questions": [
     {
-      "prompt": "¿Cuál es la derivada de $f(g(x))$?",
-      "options": [
-        "$f'(x) \\cdot g'(x)$",
-        "$f'(g(x)) \\cdot g'(x)$",
-        "$f(g'(x))$",
-        "$f'(g(x)) + g'(x)$"
-      ],
+      "prompt": "¿Qué organelo contiene el ADN?",
+      "options": ["Mitocondria", "Núcleo", "Lisosoma", "Aparato de Golgi"],
       "correctIndex": 1,
-      "explanation": "La regla de la cadena multiplica la derivada de la función externa, evaluada en la interna, por la derivada de la interna.",
+      "explanation": "El núcleo es el organelo que almacena el ADN y controla la actividad celular.",
       "sourceSnap": 1
     },
     {
-      "prompt": "¿Qué es una función compuesta?",
+      "prompt": "¿Dónde se produce la energía (ATP) de la célula?",
       "options": [
-        "Una función aplicada al resultado de otra",
-        "La suma de dos funciones",
-        "Una función sin derivada",
-        "El producto de dos funciones"
-      ],
-      "correctIndex": 0,
-      "explanation": "En $f(g(x))$, la función $f$ se aplica al resultado de $g$.",
-      "sourceSnap": 1
-    },
-    {
-      "prompt": "Si $y = (3x^2 + 1)^5$, ¿cuánto vale $y'$?",
-      "options": [
-        "$5(3x^2 + 1)^4$",
-        "$6x$",
-        "$5(3x^2 + 1)^4 \\cdot 6x$",
-        "$(3x^2 + 1)^4 \\cdot 6x$"
+        "En el núcleo",
+        "En los lisosomas",
+        "En las mitocondrias",
+        "En la membrana plasmática"
       ],
       "correctIndex": 2,
-      "explanation": "Se deriva la potencia, $5(3x^2 + 1)^4$, y se multiplica por la derivada de la base, $6x$.",
+      "explanation": "Las mitocondrias son los organelos encargados de la respiración celular y la producción de ATP.",
+      "sourceSnap": 1
+    },
+    {
+      "prompt": "¿Qué función cumple el aparato de Golgi?",
+      "options": [
+        "Producir energía",
+        "Almacenar el ADN",
+        "Modificar, clasificar y empaquetar proteínas",
+        "Digerir moléculas"
+      ],
+      "correctIndex": 2,
+      "explanation": "El aparato de Golgi recibe proteínas del retículo endoplasmático, las modifica y las envía a su destino.",
       "sourceSnap": 1
     }
   ]

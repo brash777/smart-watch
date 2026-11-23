@@ -16,6 +16,7 @@ export function ProfilePage() {
 
   return (
     <>
+      <h1 className="sr-only">{t('profile.title')}</h1>
       <UserProfile username={auth.user.username} />
       {auth.user.role === 'ADMIN' ? (
         <Link to={paths.admin} className={buttonClassName({ variant: 'secondary' })}>

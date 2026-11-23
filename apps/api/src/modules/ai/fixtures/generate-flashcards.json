@@ -1,19 +1,19 @@
 {
-  "title": "Regla de la cadena",
+  "title": "La célula animal",
   "cards": [
     {
-      "question": "¿Qué dice la regla de la cadena?",
-      "answer": "La derivada de $f(g(x))$ es $f'(g(x)) \\cdot g'(x)$.",
+      "question": "¿Qué contiene el núcleo de la célula?",
+      "answer": "El ADN, que controla el funcionamiento de la célula.",
       "sourceSnap": 1
     },
     {
-      "question": "¿Qué es una función compuesta?",
-      "answer": "Una función aplicada al resultado de otra, como $f(g(x))$.",
+      "question": "¿Qué función cumplen las mitocondrias?",
+      "answer": "Producir energía en forma de ATP mediante la respiración celular.",
       "sourceSnap": 1
     },
     {
-      "question": "Deriva $y = (3x^2 + 1)^5$.",
-      "answer": "$y' = 5(3x^2 + 1)^4 \\cdot 6x$",
+      "question": "¿Qué hace el aparato de Golgi?",
+      "answer": "Modifica, clasifica y empaqueta las proteínas para enviarlas a su destino.",
       "sourceSnap": 1
     }
   ]

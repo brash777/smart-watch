@@ -141,7 +141,7 @@ describe('POST /api/spaces/:spaceId/documents (Compose)', () => {
     const { data } = documentResponseSchema.parse(response.body);
     expect(data).toMatchObject({
       type: 'STUDY_NOTES',
-      title: 'Apuntes: regla de la cadena',
+      title: 'Apuntes: la célula animal y sus organelos',
       status: 'DRAFT',
       version: 1,
       promptVersion: 'compose.study-notes.v1',
@@ -210,7 +210,7 @@ describe('POST /api/spaces/:spaceId/documents (Compose)', () => {
     const withStatement = await request(app)
       .post(composeUrl)
       .set(tokens.leo)
-      .send({ ...body, instructions: 'Ensayo sobre aplicaciones de la regla de la cadena.' });
+      .send({ ...body, instructions: 'Ensayo sobre la estructura de la célula animal.' });
 
     expect(readError(withoutStatement.body).code).toBe('INSTRUCTIONS_REQUIRED');
     expect(withStatement.status).toBe(201);
@@ -413,7 +413,7 @@ describe('GET /api/documents/:id/export', () => {
     expect(response.status).toBe(200);
     expect(response.headers['content-type']).toBe('text/markdown; charset=utf-8');
     expect(response.headers['content-disposition']).toBe(
-      'attachment; filename=apuntes-regla-de-la-cadena.md',
+      'attachment; filename=apuntes-la-celula-animal-y-sus-organelos.md',
     );
     expect(response.text).toBe(`# ${document.title}\n\n${document.contentMarkdown}\n`);
   });
@@ -437,7 +437,7 @@ describe('GET /api/documents/:id/export', () => {
     expect(response.status).toBe(200);
     expect(response.headers['content-type']).toBe('application/pdf');
     expect(response.headers['content-disposition']).toBe(
-      'attachment; filename=apuntes-regla-de-la-cadena.pdf',
+      'attachment; filename=apuntes-la-celula-animal-y-sus-organelos.pdf',
     );
     const pdf = response.body as Buffer;
     expect(pdf.length).toBeGreaterThan(1000);

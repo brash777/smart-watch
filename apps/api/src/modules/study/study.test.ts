@@ -111,7 +111,7 @@ describe('POST /api/spaces/:spaceId/flashcards', () => {
     expect(response.status).toBe(201);
     const { data } = deckResponseSchema.parse(response.body);
     expect(data).toMatchObject({
-      title: 'Regla de la cadena',
+      title: 'La célula animal',
       promptVersion: 'generate-flashcards.v1',
     });
     expect(data.cards).toHaveLength(3);
@@ -136,7 +136,7 @@ describe('POST /api/spaces/:spaceId/quizzes', () => {
     const quiz = await createQuiz(ctx);
 
     expect(quiz).toMatchObject({
-      title: 'Quiz: regla de la cadena',
+      title: 'Quiz: la célula animal',
       promptVersion: 'generate-quiz.v1',
     });
     expect(quiz.questions).toHaveLength(3);
@@ -153,7 +153,7 @@ describe('POST /api/spaces/:spaceId/quizzes', () => {
       where: { quizId: quiz.id },
       orderBy: { order: 'asc' },
     });
-    expect(stored.map(({ correctIndex }) => correctIndex)).toEqual([1, 0, 2]);
+    expect(stored.map(({ correctIndex }) => correctIndex)).toEqual([1, 2, 2]);
     const call = provider.calls.at(-1)?.request;
     expect(call?.text).toContain(
       `- \`questions\`: ${String(await settingValue('quiz_default_questions'))} questions`,
@@ -185,11 +185,11 @@ describe('POST /api/quizzes/:id/attempts', () => {
     const ctx = await scenario();
     const quiz = await createQuiz(ctx);
 
-    // The correct options of the fixture are 1, 0 and 2.
+    // The correct options of the fixture are 1, 2 and 2.
     const response = await request(ctx.app)
       .post(`/api/quizzes/${quiz.id}/attempts`)
       .set(ctx.tokens.sol)
-      .send({ answers: [1, 0, 0], score: 3 });
+      .send({ answers: [1, 2, 0], score: 3 });
 
     expect(response.status).toBe(201);
     const { data } = attemptResponseSchema.parse(response.body);
@@ -198,7 +198,7 @@ describe('POST /api/quizzes/:id/attempts', () => {
     expect(data.results[2]).toMatchObject({ chosenIndex: 0, correctIndex: 2 });
     expect(data.results[2]?.explanation).toEqual(expect.any(String) as unknown);
     const attempt = await prisma.quizAttempt.findUniqueOrThrow({ where: { id: data.id } });
-    expect(attempt).toMatchObject({ score: 2, answers: [1, 0, 0] });
+    expect(attempt).toMatchObject({ score: 2, answers: [1, 2, 0] });
   });
 
   it('needs one valid option per question', async () => {
@@ -233,7 +233,7 @@ describe('POST /api/quizzes/:id/attempts', () => {
       request(ctx.app)
         .post(`/api/quizzes/${quizId}/attempts`)
         .set(token)
-        .send({ answers: [1, 0, 2] });
+        .send({ answers: [1, 2, 2] });
 
     expect((await attempt(quiz.id, {})).status).toBe(401);
     expect((await attempt(quiz.id, ctx.tokens.out)).status).toBe(403);

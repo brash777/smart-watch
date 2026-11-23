@@ -72,7 +72,7 @@ async function scenario() {
   await request(app)
     .post(`/api/spaces/${space.id}/snaps`)
     .set(tokens.leo)
-    .field('note', 'Ejemplos de la regla de la cadena')
+    .field('note', 'Diagrama de la célula animal')
     .attach('files', await createTestJpeg(), { filename: 'b.jpg', contentType: 'image/jpeg' })
     .expect(201);
   await aiQueue.onIdle();
@@ -84,20 +84,20 @@ describe('POST /api/spaces/:spaceId/ask', () => {
   it('answers with the snaps that share more words with the question, and saves both messages', async () => {
     const { app, users, space, tokens } = await scenario();
     const chainSnap = await prisma.snap.findFirstOrThrow({
-      where: { note: { contains: 'cadena' } },
+      where: { note: { contains: 'célula' } },
     });
 
     const response = await request(app)
       .post(`/api/spaces/${space.id}/ask`)
       .set(tokens.leo)
-      .send({ question: '¿Qué ejemplos de la regla de la cadena vimos?' });
+      .send({ question: '¿Qué organelos tiene la célula animal?' });
 
     expect(response.status).toBe(201);
     const { data } = exchangeResponseSchema.parse(response.body);
     expect(data.found).toBe(true);
     expect(data.question).toMatchObject({
       role: 'USER',
-      content: '¿Qué ejemplos de la regla de la cadena vimos?',
+      content: '¿Qué organelos tiene la célula animal?',
     });
     expect(data.answer).toMatchObject({ role: 'ASSISTANT', citedSnapIds: [chainSnap.id] });
     expect(data.answer.content).toContain('[Snap 1]');
@@ -110,9 +110,9 @@ describe('POST /api/spaces/:spaceId/ask', () => {
     const sent = provider.calls.at(-1)?.request;
     expect(sent?.promptName).toBe('ask-space');
     const text = sent?.text ?? '';
-    expect(text).toContain('¿Qué ejemplos de la regla de la cadena vimos?');
-    // The snap about the chain rule goes first.
-    expect(text.indexOf('Ejemplos de la regla de la cadena')).toBeLessThan(
+    expect(text).toContain('¿Qué organelos tiene la célula animal?');
+    // The snap about the cell goes first.
+    expect(text.indexOf('Diagrama de la célula animal')).toBeLessThan(
       text.indexOf('Integrales por partes'),
     );
   });
@@ -126,13 +126,13 @@ describe('POST /api/spaces/:spaceId/ask', () => {
         .send({ question })
         .expect(201);
 
-    await ask('¿Qué es la regla de la cadena?');
+    await ask('¿Qué es el núcleo de la célula?');
     await ask('¿Y un ejemplo?');
 
     const text = provider.calls.at(-1)?.request.text ?? '';
     const history = text.slice(text.indexOf('<history>'), text.indexOf('</history>'));
-    expect(history).toContain('- Question: ¿Qué es la regla de la cadena?');
-    expect(history).toContain('- Answer: La regla de la cadena dice');
+    expect(history).toContain('- Question: ¿Qué es el núcleo de la célula?');
+    expect(history).toContain('- Answer: El núcleo contiene el ADN');
     expect(history).not.toContain('[Snap');
   });
 

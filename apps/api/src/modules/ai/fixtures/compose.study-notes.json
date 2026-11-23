@@ -1,4 +1,4 @@
 {
-  "title": "Apuntes: regla de la cadena",
-  "contentMarkdown": "## Regla de la cadena\n\nSi $y = f(g(x))$, su derivada es $f'(g(x)) \\cdot g'(x)$ [Snap 1].\n\n### Ejemplo resuelto\n\n- $y = (3x^2 + 1)^5$\n- $y' = 5(3x^2 + 1)^4 \\cdot 6x$ [Snap 1]\n\n## Conceptos clave\n\n- **Función compuesta**: una función aplicada al resultado de otra [Snap 1]."
+  "title": "Apuntes: la célula animal y sus organelos",
+  "contentMarkdown": "## La célula animal\n\nLa célula animal es la unidad básica de la vida. Está compuesta por varios organelos que cumplen funciones específicas [Snap 1].\n\n### Organelos principales\n\n- **Núcleo**: contiene el ADN y controla la actividad celular [Snap 1].\n- **Mitocondrias**: producen energía en forma de ATP mediante la respiración celular [Snap 1].\n- **Retículo endoplasmático**: síntesis de proteínas (rugoso) y lípidos (liso) [Snap 1].\n- **Aparato de Golgi**: modifica, clasifica y empaqueta proteínas [Snap 1].\n- **Lisosomas**: enzimas para la digestión celular [Snap 1].\n- **Membrana plasmática**: regula el paso de sustancias [Snap 1]."
 }

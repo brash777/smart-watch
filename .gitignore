@@ -28,6 +28,15 @@ apps/*/storage/
 
 # OS files
 .DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.iml
+
+# Private design references (screenshots of other apps, not committed)
+docs/referencias/
 
 # Claude Code local settings
 .claude/settings.local.json

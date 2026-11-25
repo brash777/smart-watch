@@ -1,3 +1,6 @@
+enlace video:https://drive.google.com/file/d/1efT7-cyISNaFGBReMfiVfPi844sbPMbb/view?usp=sharing
+
+
 # Snapia
 
 **Take the photo. The AI does the rest.** A Smart Wash project.

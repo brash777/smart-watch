@@ -1,6 +1,6 @@
 enlace video:https://drive.google.com/file/d/1efT7-cyISNaFGBReMfiVfPi844sbPMbb/view?usp=sharing
 
-http://localhost:5173 
+Abra la aplicación web en WEB_BASE_URL http://localhost:5173 
 
 
 # Snapia
